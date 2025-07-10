@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+    <link rel="stylesheet" href="{% static 'blog/style.css' %}">
+</head>
+<body style="background-color: #7CA4CA;">
+    <div class="container">
+        <div class="post-detail-card">
+            <h2>{{ post.title }}</h2>
+            <p><strong>Автор: </strong><a href="{% url 'get_author_by_id' post.author.id %}">{{ post.author.name }}</a> </p>
+            <p>{{ post.content }}</p>
+            <p class="date-info">Створено: {{ post.created_at|date:"d.m.Y H:i" }} | Оновлено: {{ post.updated_at|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        <hr class="divider">
+
+        <div class="comments-section">
+            <div class="posts-header">
+                <h3 style="margin-top: 20px;">Коментарі:</h3>
+                <a href="{% url 'post_list' %}" class="back-link">← Назад до списку постів</a>
+            </div>
+            {% if post.comments.all %}
+                <ul class="comments-list">
+                    {% for comment in post.comments.all %}
+                        <li>
+                            <p style="padding-left: 10px;"><strong>{{ comment.author }}</strong>
+                            <span class="comment-date">({{ comment.created_at|date:"d.m.Y H:i" }})</span></p>
+                            <p style="padding-left: 10px;">{{ comment.text }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Коментарів поки немає.</p>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'post_list' %}" class="back-link">← Назад до списку постів</a>
+    </div>
+    <script>
+        const cards = document.querySelectorAll('.post-detail-card');
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.4,
+            rootMargin: "0px 0px -60px 0px" 
+        });
+
+        cards.forEach(card => observer.observe(card));
+    </script>
+</body>
+</html>
