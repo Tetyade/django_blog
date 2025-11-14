@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile {{ user_profile.username }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <div class="profile-card">
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="profile-header">
+      <div class="avatar" aria-hidden="true">
+        {{ user_profile.username|first|upper }}
+      </div>
+      <div>
+        <h1>@{{ user_profile.username }}</h1>
+        {% if user_profile.first_name or user_profile.last_name %}
+          <div class="pill">
+            {{ user_profile.first_name }} {{ user_profile.last_name }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <dl class="meta">
+      <dt>Email</dt>
+      <dd>{{ user_profile.email }}</dd>
+
+      <dt>Registered</dt>
+      <dd>{{ user_profile.date_joined|date:"d.m.Y H:i" }}</dd>
+
+      <dt>Last login</dt>
+      <dd>
+        {% if user_profile.last_login %}
+          {{ user_profile.last_login|date:"d.m.Y H:i" }}
+        {% else %}
+          <span>Never logged in</span>
+        {% endif %}
+      </dd>
+
+    </dl>
+
+    <div class="actions">
+      {% if request.user == user_profile %}
+        <a class="btn" href="{% url 'auth_system:my-profile-edit' %}">Edit profile</a>
+      {% endif %}
+      <a class="btn" href="{% url 'post:home' %}">Back to home</a>
+    </div>
+  </div>
+</body>
+</html>

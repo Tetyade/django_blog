@@ -25,7 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'blog',  
+    # 'posts.apps.PostsConfig',
+    # 'auth_system.apps.AuthSystemConfig',
+    # 'comments.apps.CommentsConfig',
+    'comments',
+    'posts',
+    'auth_system',
 ]
 
 MIDDLEWARE = [
@@ -109,3 +114,5 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'auth_system.CustomUser'

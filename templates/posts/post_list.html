@@ -1,0 +1,21 @@
+{% extends "posts/base.html" %}
+{% block content %}
+    <h1>All Posts</h1>
+
+    {% if posts %}
+        <ul>
+            {% for post in posts %}
+                <li>
+                    <h2>{{ post.title }}</h2>
+                    <p>{{ post.content|truncatewords:30 }}</p>
+                    <p><strong>Author:</strong> {{ post.author }}</p>
+                    <p><em>Published:</em> {{ post.created_at|date:"d M Y, H:i" }}</p>
+                    <a href="{% url 'post:post-detail' post.uuid %}">Read more</a>
+                </li>
+                <hr>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No posts yet.</p>
+    {% endif %}
+{% endblock %}

@@ -5,25 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Переглянути автора</title>
-    <link rel="stylesheet" href="{% static 'blog/style.css' %}">
 </head>
 <body style="background-color: #7CA4CA;">
     <div class="container">
         <div class="author-card">
-            <h2>{{ author.name }}</h2>
+            <h2>{{ author.username }}</h2>
             <p><strong>Bio:</strong> {{ author.bio }}</p>
             <p><strong>Email:</strong> {{ author.email }}</p>
         </div>
 
         <div class="posts-header">
             <h3>Пости автора:</h3>
-            <a href="{% url 'post_list' %}" class="back-link">← Назад до списку постів</a>
+            <a href="{% url 'post:home' %}" class="back-link">← Назад до списку постів</a>
         </div>
 
         <ul class="posts-list">
             {% for post in page_obj %}
                 <li class="post-card">
-                    <a href="{% url 'get_post_by_id' post.id %}">{{ post.title }}</a> — {{ post.created_at|date:"d.m.Y H:i" }}
+                    <a href="{% url 'post:post-detail' post.uuid %}">{{ post.title }}</a> — {{ post.created_at|date:"d.m.Y H:i" }}
                 </li>
             {% empty %}
                 <li>Автор не має постів.</li>
@@ -61,5 +60,74 @@
 
         cards.forEach(card => observer.observe(card));
     </script>
+    <style>
+        
+    .author-card {
+        background-color: rgba(226, 234, 241, 0.85);
+        border-radius: 12px;
+        padding: 30px;
+        margin: 40px auto;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        text-align: center;
+    }
+
+    .author-card h2 {
+        margin-bottom: 10px;
+        color: #2a4c6f;
+    }
+
+    .author-card p {
+        margin: 8px 0;
+        font-size: 16px;
+    }
+
+    .posts-list {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 30px;
+    }
+
+    .posts-list li {
+        background-color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 12px;
+        padding: 12px 18px;
+        border-radius: 8px;
+        transition: background 0.3s;
+    }
+
+    .posts-list li:hover {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 14px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .back-link:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .posts-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0px;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .posts-header h3 {
+        margin: 0;
+        font-size: 21px;
+    }
+
+    </style>
 </body>
 </html>
