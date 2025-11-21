@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'auth_system.apps.AuthSystemConfig',
     'comments.apps.CommentsConfig',
     'messages.apps.MessagesConfig',
+    'groups.apps.GroupsConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [

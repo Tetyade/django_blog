@@ -34,11 +34,20 @@ class Message(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='sent_messages'
+        related_name='direct_messages'
     )
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "sender": self.sender.username,
+            "text": self.text,
+            "created_at": self.created_at.isoformat()
+        }
+
 
 @receiver(post_save, sender=Message)
 def update_thread_on_new_message(sender, instance, created, **kwargs):

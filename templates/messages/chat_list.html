@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Чати</h1>
+
+    <ul>
+        {% for chat in chats %}
+            <li>
+
+                {% if chat.chat_type == "thread" %}
+                    <a href="{% url 'messages:thread-detail' chat.uuid %}">
+                        {% if chat.participant1 == request.user %}
+                            {{ chat.participant2.username }}
+                        {% else %}
+                            {{ chat.participant1.username }}
+                        {% endif %}
+                    </a>
+
+                {% elif chat.chat_type == "group" %}
+                    <a href="{% url 'groups:group-detail' chat.uuid %}">
+                        {{ chat.name }}
+                    </a>
+                {% endif %}
+
+                {% if chat.messages.last %}
+                    — {{ chat.messages.last.text|truncatewords:5 }}
+                    ({{ chat.messages.last.created_at|date:"H:i d.m.Y" }})
+                {% endif %}
+
+            </li>
+        {% empty %}
+            <li>У вас поки немає чатів.</li>
+        {% endfor %}
+    </ul>
+
+
+
+</body>
+</html>

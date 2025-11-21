@@ -1,0 +1,40 @@
+{% extends 'groups/base.html' %}
+{% block title%} Chat Room{%endblock title%}
+{% load static %}
+
+{% block content %}
+
+<h1>{{ group.name }}</h1>
+
+<h3>Учасники:</h3>
+<ul>
+    {% for member in group.members.all %}
+        <li>{{ member.username }}</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Повідомлення:</h3>
+<div>
+    {% for message in messages %}
+        <div style="margin-bottom: 10px;">
+            <strong>{{ message.sender.username }}</strong> 
+            <span style="color: gray;">({{ message.timestamp|date:"H:i d.m.Y" }})</span>
+            <p>{{ message.text }}</p>
+        </div>
+    {% empty %}
+        <p>Поки що немає повідомлень.</p>
+    {% endfor %}
+</div>
+
+<hr>
+
+<h3>Написати повідомлення</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Надіслати</button>
+</form>
+
+{% endblock %}

@@ -19,7 +19,7 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Відправити</button>
+        <button type="submit">Надіслати</button>
     </form>
 
     <a href="{% url 'messages:thread-list' %}">← Повернутися до всіх чатів</a>

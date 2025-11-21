@@ -22,5 +22,6 @@ urlpatterns = [
     path('auth/', include('auth_system.urls')),
     path('comments/', include('comments.urls')),
     path('thread/', include('messages.urls')),
+    path('groups/', include('groups.urls')),
     path('admin/', admin.site.urls),
 ]
