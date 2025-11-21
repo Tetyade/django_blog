@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Діалог</h2>
+
+    <div class="messages">
+        {% for msg in messages %}
+            <p><strong>{{ msg.sender.username }}:</strong> {{ msg.text }} <em>{{ msg.created_at|date:"H:i d.m.Y" }}</em></p>
+        {% empty %}
+            <p>Поки немає повідомлень.</p>
+        {% endfor %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Відправити</button>
+    </form>
+
+    <a href="{% url 'messages:thread-list' %}">← Повернутися до всіх чатів</a>
+
+</body>
+</html>

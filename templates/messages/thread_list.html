@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Чати</h1>
+
+    <ul>
+        {% for thread in threads %}
+            <li>
+                {% if thread.participant1 == request.user %}
+                    <a href="{% url 'messages:thread-detail' thread.uuid %}">{{ thread.participant2.username }}</a>
+                {% else %}
+                    <a href="{% url 'messages:thread-detail' thread.uuid %}">{{ thread.participant1.username }}</a>
+                {% endif %}
+
+                {% if thread.messages.last %}
+                    — останнє: {{ thread.messages.last.text|truncatewords:5 }} 
+                    ({{ thread.messages.last.created_at|date:"H:i d.m.Y" }})
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>У вас поки немає чатів.</li>
+        {% endfor %}
+    </ul>
+
+
+</body>
+</html>
