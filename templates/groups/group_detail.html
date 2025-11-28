@@ -36,5 +36,23 @@
     {{ form.as_p }}
     <button type="submit">Надіслати</button>
 </form>
+<script>
+const groupUUID = "{{ group.uuid }}";
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/group/" + groupUUID + "/"
+);
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const container = document.getElementById("messages");
+    container.innerHTML += `<p><b>${data.sender}:</b> ${data.text}</p>`;
+    container.scrollTop = container.scrollHeight;
+};
+
+document.getElementById("send-btn").onclick = function() {
+    const text = document.getElementById("message-input").value;
+    socket.send(JSON.stringify({ text }));
+};
+</script>
 
 {% endblock %}

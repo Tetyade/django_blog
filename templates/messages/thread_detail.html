@@ -8,21 +8,43 @@
 <body>
     <h2>Діалог</h2>
 
-    <div class="messages">
+    <div id="messages" class="messages">
         {% for msg in messages %}
             <p><strong>{{ msg.sender.username }}:</strong> {{ msg.text }} <em>{{ msg.created_at|date:"H:i d.m.Y" }}</em></p>
         {% empty %}
             <p>Поки немає повідомлень.</p>
         {% endfor %}
     </div>
-
-    <form method="post">
+    <input type="text" id="message-input" placeholder="Повідомлення..." />
+    <button id="send-btn">Надіслати</button>
+    <!-- <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Надіслати</button>
-    </form>
+    </form> -->
 
     <a href="{% url 'messages:thread-list' %}">← Повернутися до всіх чатів</a>
+<script>
+const roomUUID = "{{ thread.uuid }}";
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/thread/" + roomUUID + "/"
+);
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const container = document.getElementById("messages");
+    container.innerHTML += `<p><b>${data.sender}:</b> ${data.text} <em>${data.created_at}</em></p>`;
+    container.scrollTop = container.scrollHeight;
+};
+
+document.getElementById("send-btn").onclick = function() {
+    const input = document.getElementById("message-input");
+    const text = input.value;
+    if (text.trim() === "") return;
+    socket.send(JSON.stringify({ text }));
+    input.value = "";
+};
+</script>
 
 </body>
 </html>

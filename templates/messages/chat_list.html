@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Чати</h1>
+    <h1><TT>Чати</TT></h1>
 
     <ul>
         {% for chat in chats %}
@@ -37,8 +37,32 @@
             <li>У вас поки немає чатів.</li>
         {% endfor %}
     </ul>
+<script>
 
+const base_url = `${window.location.hostname}:${window.location.port}`;
 
+const websocket = new WebSocket(`ws://${base_url}`);
+
+websocket.onopen = (event) => {
+    console.log("client says connection opened");
+    websocket.send("Client sends Welcome");
+};
+
+websocket.onmessage = (event) => {
+    console.log("client says server message received:", event.data);
+};
+
+websocket.onerror = (event) => {
+    console.error("WebSocket error:", event);
+};
+
+websocket.onclose = () => {
+    console.log("WebSocket connection closed");
+};
+
+</script>
 
 </body>
-</html>
+
+
+</html
