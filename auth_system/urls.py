@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserLoginView, UserRegisterView, ProfileView, MyProfileView, MyProfileUpdateView
+from .views import UserLoginView, UserRegisterView, ProfileView, MyProfileView, MyProfileUpdateView, follow_user, unfollow_user, followers_list, following_list
 # from rest_framework.authtoken.views import obtain_auth_token
 from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
@@ -33,5 +33,9 @@ urlpatterns = [
     # path("password_reset/done/", PasswordResetDoneView.as_view(template_name='auth_system/reset/password_reset_done.html'), name="password_reset_done"),
     # path("reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(template_name='auth_system/reset/password_reset_confirm.html'), name="password_reset_confirm"),
     # path("reset/done/", PasswordResetCompleteView.as_view(template_name='auth_system/reset/password_reset_complete.html'), name="password_reset_complete"),
+    path("follow/<uuid:user_uuid>/", follow_user, name="follow"),
+    path("unfollow/<uuid:user_uuid>/", unfollow_user, name="unfollow"),
+    path("followers/<uuid:user_uuid>/", followers_list, name="followers-list"),
+    path("following/<uuid:user_uuid>/", following_list, name="following-list"),
 ]
 

@@ -21,13 +21,15 @@ class ThreadConsumer(AsyncWebsocketConsumer):
         thread = await self.get_thread()
         msg = await self.create_message(thread, user, text)
 
+        # Відправка всім учасникам групи з uuid відправника
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chat_message",
                 "text": msg.text,
                 "sender": user.username,
-                "created_at": msg.created_at.strftime("%H:%M"),
+                "sender_uuid": str(user.uuid),   # додано
+                "created_at": msg.created_at.strftime("%H:%M %d.%m.%Y"),
             }
         )
 

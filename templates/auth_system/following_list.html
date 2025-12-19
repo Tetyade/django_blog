@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user_profile.username }} - {% if type == "followers" %}Фоловери{% else %}Підписки{% endif %}</title>
+</head>
+<body>
+    <h2>{{ user_profile.username }} - {% if type == "followers" %}Фоловери{% else %}Підписки{% endif %}</h2>
+
+    <ul>
+    {% for item in page_obj %}
+        {% if type == "followers" %}
+            <li>
+                <a href="{% url 'auth_system:profile' item.follower.uuid %}">{{ item.follower.username }}</a>
+                {% if request.user == user_profile %}
+                    <!-- власник профілю може видаляти підписників, опційно -->
+                {% endif %}
+            </li>
+        {% else %}
+            <li>
+                <a href="{% url 'auth_system:profile' item.following.uuid %}">{{ item.following.username }}</a>
+            </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">← Попередня</a>
+        {% endif %}
+
+        <span>Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Наступна →</a>
+        {% endif %}
+    </div>
+</body>
+</html>

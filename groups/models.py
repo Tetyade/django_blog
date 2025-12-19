@@ -7,12 +7,28 @@ from django.db.models.signals import post_save
 class Group(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4)
     name = models.CharField(max_length=255)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="owned_groups"
+    )
+    admins = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="admin_groups",
+        blank=True
+    )
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='custom_groups')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.owner not in self.members.all():
+            self.members.add(self.owner)
     
     def add_member(self, user):
         self.members.add(user)

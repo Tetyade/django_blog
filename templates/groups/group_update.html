@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Редагувати групу: {{ group.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Зберегти зміни</button>
+</form>
+
+<form method="post" action="{% url 'groups:group-delete' group.uuid %}" style="margin-top: 1em;">
+    {% csrf_token %}
+    <button type="submit" onclick="return confirm('Ви точно хочете видалити групу?');">Видалити групу</button>
+</form>
+
+<a href="{% url 'messages:chat-list' %}">← Повернутися до списку чатів</a>
+{% endblock %}

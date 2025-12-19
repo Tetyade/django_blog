@@ -1,51 +1,82 @@
+{% extends "posts/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ post.title }}</title>
-</head>
-<body style="background-color: #7CA4CA;">
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<body>
+
     <div class="container">
-        <div class="post-detail-card">
+        <div class="post-detail-card large-card">
+            <div class="post-header">
+                {% if post.author.profile.avatar %}
+                    <img class="avatar-circle" src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}">
+                {% else %}
+                    <div class="avatar-circle placeholder">{{ post.author.username|slice:":1" }}</div>
+                {% endif %}
+                <div class="author-info">
+                    <strong><a href="{% url 'auth_system:profile' post.author.uuid %}">{{ post.author }}</a></strong>
+                    <span class="time">{{ post.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+            </div>
+
             <h2>{{ post.title }}</h2>
-            <p><strong>Автор: </strong><a href="{% url 'auth_system:profile' post.author.uuid %}">{{ post.author }}</a> </p>
             <p>{{ post.content }}</p>
-            <p class="date-info">Створено: {{ post.created_at|date:"d.m.Y H:i" }} | Оновлено: {{ post.updated_at|date:"d.m.Y H:i" }}</p>
+
+            <div class="detail-likes">
+                {% if request.user.is_authenticated %}
+                <form class="like-form" action="{% url 'post:post-like' post.uuid %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="detail-like-btn">
+                        {% if post.post_liked_by_current_user %}
+                            ❤️
+                        {% else %}
+                            🤍
+                        {% endif %}
+                    </button>
+                    <span class="like-count">{{ post.likes_post.count }}</span>
+                </form>
+                {% else %}
+                    <span class="like-count">{{ post.likes_post.count }}</span>
+                {% endif %}
+            </div>
+
+            <p class="date-info">Оновлено: {{ post.updated_at|date:"d.m.Y H:i" }}</p>
         </div>
 
         <hr class="divider">
 
         <div class="comments-section">
-            <form method="post" action="{% url 'post:post-detail' post.uuid %}" class="comment-form">
+            <form method="post" action="{% url 'post:post-detail' post.uuid %}" class="comment-form styled-form">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" class="btn-dark">Post</button>
             </form>
+
             <div class="posts-header">
                 <h3 style="margin-top: 20px;">Коментарі:</h3>
                 <a href="{% url 'post:home' %}" class="back-link">← Назад до списку постів</a>
             </div>
+
+            <ul>
             {% if comments %}
                 {% for comment in comments %}
-                <li>
-                    <p style="padding-left: 10px;"><strong>{{ comment.author }}</strong>
-                    <span class="comment-date">({{ comment.created_at|date:"d.m.Y H:i" }})</span></p>
-                    <p style="padding-left: 10px;">{{ comment.content }}</p>
+                <li class="comment-card">
+                    <div class="comment-header">
+                        {% if comment.author.profile.avatar %}
+                            <img class="avatar-circle" src="{{ comment.author.profile.avatar.url }}" alt="{{ comment.author.username }}">
+                        {% else %}
+                            <div class="avatar-circle placeholder">{{ comment.author.username|slice:":1" }}</div>
+                        {% endif %}
+                        <strong>{{ comment.author }}</strong>
+                        <span class="comment-date">({{ comment.created_at|date:"d.m.Y H:i" }})</span>
+                    </div>
+                    <p class="comment-content">{{ comment.content }}</p>
 
                     <div class="comment-actions">
                         <span>Likes: {{ comment.likes.count }}</span>
-
                         {% if request.user.is_authenticated %}
                         <form action="{% url 'comments:comment-like' comment.pk %}" method="post">
                             {% csrf_token %}
-                            <button type="submit">
-                                {% if comment.liked_by_current_user %}
-                                    ❤️
-                                {% else %}
-                                    🤍
-                                {% endif %}
-                            </button>
+                            <button type="submit">{% if comment.liked_by_current_user %}❤️{% else %}🤍{% endif %}</button>
                         </form>
                         {% endif %}
 
@@ -57,31 +88,77 @@
                         {% endif %}
                     </div>
                 </li>
-            {% endfor %}
-
+                {% endfor %}
             {% else %}
                 <p>Коментарів поки немає.</p>
             {% endif %}
+            </ul>
+
+            <a href="{% url 'post:home' %}" class="back-link">← Назад до списку постів</a>
         </div>
-
-        <a href="{% url 'post:home' %}" class="back-link">← Назад до списку постів</a>
     </div>
-    <script>
-        const cards = document.querySelectorAll('.post-detail-card');
 
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.4,
-            rootMargin: "0px 0px -60px 0px" 
+<script>
+const cards = document.querySelectorAll('.post-detail-card');
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+        }
+    });
+}, {
+    threshold: 0.4,
+    rootMargin: "0px 0px -60px 0px"
+});
+cards.forEach(card => observer.observe(card));
+
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        const url = form.action;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const btn = form.querySelector('.detail-like-btn');
+            btn.textContent = data.liked ? '❤️' : '🤍';
+            form.querySelector('.like-count').textContent = data.likes_count;
         });
+    });
+});
 
-        cards.forEach(card => observer.observe(card));
-    </script>
+document.querySelectorAll('.comment-actions form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        const url = form.action;
+        const btn = form.querySelector('button');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.error) {
+                btn.textContent = data.liked ? '❤️' : '🤍';
+                form.closest('.comment-actions').querySelector('span').textContent = "Likes: " + data.likes_count;
+            }
+        });
+    });
+});
+
+</script>
 </body>
-</html>
+{% endblock %}

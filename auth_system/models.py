@@ -2,6 +2,9 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
+from django.conf import settings
+
+User = settings.AUTH_USER_MODEL
 
 def validate_image(image):
     # Перевірка розміру файлу
@@ -23,3 +26,15 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class Follow(models.Model):
+    follower = models.ForeignKey(User, related_name="following_set", on_delete=models.CASCADE)
+    following = models.ForeignKey(User, related_name="followers_set", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "following")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.follower} → {self.following}"

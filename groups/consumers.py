@@ -1,9 +1,20 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.contrib.auth import get_user_model
 import json
 
 class GroupConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        self.uuid = self.scope["url_route"]["kwargs"]["uuid"]
+        self.room_group_name = f"group_{self.uuid}"
+
+        # приєднання до групи
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # видалення з групи при відключенні
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -14,12 +25,13 @@ class GroupConsumer(AsyncWebsocketConsumer):
         msg = await self.create_message(group, user, text)
 
         await self.channel_layer.group_send(
-            f"group_{group.uuid}",
+            self.room_group_name,
             {
                 "type": "chat_message",
                 "text": msg.text,
                 "sender": user.username,
-                "created_at": msg.created_at.strftime("%H:%M"),
+                "sender_uuid": str(user.uuid),
+                "created_at": msg.created_at.strftime("%H:%M %d.%m.%Y"),
             }
         )
 
@@ -38,5 +50,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_user(self, user_id):
+        from django.contrib.auth import get_user_model
         User = get_user_model()
         return User.objects.get(id=user_id)

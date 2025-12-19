@@ -5,17 +5,68 @@
     {% if posts %}
         <ul>
             {% for post in posts %}
-                <li>
+                <li onclick="window.location.href='{% url 'post:post-detail' post.uuid %}'">
+                    
+                    <div class="post-header">
+                        <strong>{{ post.author }}</strong>
+                        <span class="time">{{ post.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+
                     <h2>{{ post.title }}</h2>
+
                     <p>{{ post.content|truncatewords:30 }}</p>
-                    <p><strong>Author:</strong> {{ post.author }}</p>
-                    <p><em>Published:</em> {{ post.created_at|date:"d M Y, H:i" }}</p>
-                    <a href="{% url 'post:post-detail' post.uuid %}">Read more</a>
+
+                    <div class="post-actions" onclick="event.stopPropagation();">
+                        {% if request.user.is_authenticated %}
+                        <form class="like-form" action="{% url 'post:post-like' post.uuid %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="like-btn">
+                                {% if post.post_liked_by_current_user %}
+                                    ❤️
+                                {% else %}
+                                    🤍
+                                {% endif %}
+                            </button>
+                            <span class="like-count">{{ post.likes_post.count }}</span>
+                        </form>
+                        {% else %}
+                            <span class="like-count">{{ post.likes_post.count }}</span>
+                        {% endif %}
+
+                        <!-- comments icon (click -> detail page) -->
+                        <a class="comment-icon" href="{% url 'post:post-detail' post.uuid %}">
+                            💬
+                        </a>
+                    </div>
+
                 </li>
-                <hr>
             {% endfor %}
         </ul>
     {% else %}
         <p>No posts yet.</p>
     {% endif %}
+
+<script>
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        const url = form.action;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            form.querySelector('.like-btn').textContent = data.liked ? '❤️' : '🤍';
+            form.querySelector('.like-count').textContent = data.likes_count;
+        });
+    });
+});
+</script>
+
 {% endblock %}

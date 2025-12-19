@@ -1,0 +1,101 @@
+{% extends 'groups/base.html' %}
+{% block title %}Створити групу{% endblock %}
+
+{% block content %}
+<div class="group-create-container">
+    <h2>Створити нову групу</h2>
+
+    <form id="group-form" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_name">Назва групи:</label>
+            <input type="text" name="name" id="id_name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Додати учасників (взаємні фоловери):</label>
+            <input type="text" id="search-input" placeholder="Знайти користувача...">
+
+            <div id="selected-users" class="members-box">
+                <h4>Вибрані користувачі:</h4>
+                <ul id="selected-list"></ul>
+            </div>
+
+            <div id="search-results" class="members-box">
+                <!-- результати AJAX пошуку -->
+            </div>
+        </div>
+
+        <button type="submit" class="save-btn">Створити групу</button>
+    </form>
+</div>
+
+<script>
+const searchInput = document.getElementById('search-input');
+const resultsBox = document.getElementById('search-results');
+const selectedList = document.getElementById('selected-list');
+const selectedUsers = new Set();
+
+// Функція додати користувача у вибрані
+function addUser(userId, username) {
+    if (!selectedUsers.has(userId)) {
+        selectedUsers.add(userId);
+
+        const li = document.createElement('li');
+        li.textContent = username;
+        li.dataset.userId = userId;
+        li.style.cursor = 'pointer';
+        li.title = "Натисніть, щоб видалити";
+
+        li.addEventListener('click', () => {
+            selectedUsers.delete(userId);
+            li.remove();
+        });
+
+        selectedList.appendChild(li);
+    }
+}
+
+// AJAX пошук
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim();
+    fetch(`{% url 'groups:search-followers' %}?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+            resultsBox.innerHTML = '';
+            if (data.length === 0) {
+                resultsBox.innerHTML = '<p>Користувачів не знайдено</p>';
+                return;
+            }
+
+            data.forEach(user => {
+                const div = document.createElement('div');
+                div.textContent = user.username;
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', () => addUser(user.id, user.username));
+                resultsBox.appendChild(div);
+            });
+        });
+});
+
+// Перед відправкою форми додаємо hidden поля для вибраних користувачів
+document.getElementById('group-form').addEventListener('submit', function(e) {
+    selectedUsers.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'members';
+        input.value = id;
+        this.appendChild(input);
+    });
+});
+</script>
+
+<style>
+.group-create-container { max-width: 480px; margin: 40px auto; padding: 20px; background: #f3f3f3; border-radius: 10px; }
+.form-group { margin-bottom: 15px; }
+.members-box { max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+.save-btn { padding: 10px 15px; background: #4f155f; color: white; border: none; cursor: pointer; border-radius: 5px; }
+#search-results div:hover { background-color: #eee; }
+#selected-list li { margin: 5px 0; padding: 3px 5px; background: #ccc; border-radius: 3px; display: inline-block; margin-right: 5px; }
+</style>
+{% endblock %}
