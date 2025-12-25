@@ -31,9 +31,15 @@
             </div>
 
             <div class="nav-right">
-                <a class="direct-btn" href="{% url 'messages:thread-list' %}">
-                    Direct
-                </a>
+                {% if user.is_authenticated %}
+                    <a class="direct-btn" href="{% url 'messages:thread-list' %}">
+                        Direct
+                    </a>
+                {% else %}
+                    <a class="direct-btn" href="{% url 'auth_system:login' %}">
+                        Direct
+                    </a>
+                {% endif %}
             </div>
 
         </div>
@@ -45,5 +51,30 @@
         {% block content %}
         {% endblock %}
     </main>
+    <div id="toast-container"></div>
+    <script src="{% static 'blog/js/notifications.js' %}"></script>
+    <style>
+        #toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast {
+        background: #222;
+        color: #fff;
+        padding: 12px 16px;
+        margin-top: 10px;
+        border-radius: 8px;
+        min-width: 220px;
+        animation: fadeIn 0.3s;
+    }
+
+    .toast.hide {
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    </style>
 </body>
 </html>

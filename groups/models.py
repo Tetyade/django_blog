@@ -49,7 +49,11 @@ class Message(models.Model):
     )
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
+    read_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="read_group_messages",
+        blank=True
+    )
 
 @receiver(post_save, sender=Message)
 def update_group_on_new_message(sender, instance, created, **kwargs):

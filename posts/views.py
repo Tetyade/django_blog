@@ -16,9 +16,11 @@ class PostListView(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset().order_by('-created_at')
-        # Додаємо властивість liked_by_current_user для кожного поста
         for post in qs:
-            post.post_liked_by_current_user = post.likes_post.filter(user=self.request.user).exists()
+            if self.request.user.is_authenticated:
+                post.post_liked_by_current_user = post.likes_post.filter(user=self.request.user).exists()
+            else:
+                post.post_liked_by_current_user = False
         return qs
 
     # def get_queryset(self):

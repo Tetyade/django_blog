@@ -352,6 +352,10 @@ if (textarea) {
 socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
 
+    if (data.type === "notify_message") {
+        return; 
+    }
+
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message");
 

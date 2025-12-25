@@ -51,7 +51,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 16px 12px;
+            padding: 12px 12px; /* Трохи зменшив паддінг, щоб було компактніше */
             border-bottom: 1px solid #eee;
             text-decoration: none;
             color: black;
@@ -73,32 +73,69 @@
             font-size: 24px;
             font-weight: bold;
             text-transform: uppercase;
+            flex-shrink: 0; /* Щоб аватар не сплющувався */
+            overflow: hidden; /* Для картинки */
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .chat-info {
             flex-grow: 1;
+            overflow: hidden; /* Щоб текст не вилазив */
         }
 
         .chat-username {
             font-weight: bold;
             font-size: 17px;
+            margin-bottom: 4px;
         }
 
         .chat-last-message {
             font-size: 15px;
             color: gray;
-            margin-top: 2px;
+            white-space: nowrap;      /* Текст в один рядок */
+            overflow: hidden;         /* Ховаємо зайве */
+            text-overflow: ellipsis;  /* Додаємо три крапки ... */
         }
 
         .chat-last-message .author {
             font-weight: 600;
+            color: #333;
             margin-right: 4px;
         }
 
+        /* === НОВІ СТИЛІ ДЛЯ ПРАВОЇ ЧАСТИНИ === */
+        .meta-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            min-width: 60px;
+        }
+
         .chat-time {
-            font-size: 13px;
+            font-size: 12px;
             color: #999;
-            white-space: nowrap;
+            margin-bottom: 6px;
+        }
+
+        .unread-badge {
+            background-color: #ff3b30; /* Колір як в iOS */
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px; /* Робить овал або коло */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -114,14 +151,16 @@
             <a href="{% url 'groups:create-group' %}">Створити групу</a>
         </div>
     </header>
+    
     <ul class="chat-list">
-
         {% for chat in chats %}
+            
             {% if chat.chat_type == "thread" %}
                 <a class="chat-item" href="{% url 'messages:thread-detail' chat.uuid %}">
+                    
                     <div class="avatar">
                         {% if chat.other_user.profile.avatar %}
-                            <img src="{{ chat.other_user.profile.avatar.url }}" style="width:100%;height:100%;border-radius:50%;">
+                            <img src="{{ chat.other_user.profile.avatar.url }}">
                         {% else %}
                             {{ chat.other_user.username|first }}
                         {% endif %}
@@ -129,62 +168,79 @@
 
                     <div class="chat-info">
                         <div class="chat-username">{{ chat.other_user.username }}</div>
-
-                        {% if chat.messages.last %}
-                            <div class="chat-last-message">
+                        <div class="chat-last-message">
+                            {% if chat.messages.last %}
                                 <span class="author">
-                                    {% if chat.messages.last.author == request.user %}
+                                    {% if chat.messages.last.sender == request.user %}
                                         Ви:
-                                    {% else %}
-                                        {{ chat.messages.last.author.username }}:
                                     {% endif %}
                                 </span>
-                                {{ chat.messages.last.text|truncatewords:7 }}
+                                {{ chat.messages.last.text }}
+                            {% else %}
+                                <em>Немає повідомлень</em>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="meta-info">
+                        {% if chat.messages.last %}
+                            <div class="chat-time">
+                                {{ chat.messages.last.created_at|date:"H:i" }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if chat.unread_count > 0 %}
+                            <div class="unread-badge">
+                                {{ chat.unread_count }}
                             </div>
                         {% endif %}
                     </div>
-
-                    {% if chat.messages.last %}
-                        <div class="chat-time">
-                            {{ chat.messages.last.created_at|date:"H:i d.m" }}
-                        </div>
-                    {% endif %}
                 </a>
-
             {% elif chat.chat_type == "group" %}
                 <a class="chat-item" href="{% url 'groups:group-detail' chat.uuid %}">
+                    
                     <div class="avatar">G</div>
 
                     <div class="chat-info">
                         <div class="chat-username">{{ chat.name }}</div>
-
-                        {% if chat.messages.last %}
-                            <div class="chat-last-message">
+                        <div class="chat-last-message">
+                            {% if chat.messages.last %}
                                 <span class="author">
-                                    {% if chat.messages.last.author == request.user %}
+                                    {% if chat.messages.last.sender == request.user %}
                                         Ви:
                                     {% else %}
-                                        {{ chat.messages.last.author.username }}:
+                                        {{ chat.messages.last.sender.username }}:
                                     {% endif %}
                                 </span>
-                                {{ chat.messages.last.text|truncatewords:7 }}
+                                {{ chat.messages.last.text }}
+                            {% else %}
+                                <em>Немає повідомлень</em>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="meta-info">
+                        {% if chat.messages.last %}
+                            <div class="chat-time">
+                                {{ chat.messages.last.created_at|date:"H:i" }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if chat.unread_count > 0 %}
+                            <div class="unread-badge">
+                                {{ chat.unread_count }}
                             </div>
                         {% endif %}
                     </div>
-
-                    {% if chat.messages.last %}
-                        <div class="chat-time">
-                            {{ chat.messages.last.created_at|date:"H:i d.m" }}
-                        </div>
-                    {% endif %}
                 </a>
             {% endif %}
-        {% empty %}
-            <li>У вас поки немає чатів.</li>
-        {% endfor %}
 
+        {% empty %}
+            <li style="text-align: center; color: #999; margin-top: 40px;">
+                У вас поки немає чатів.
+            </li>
+        {% endfor %}
     </ul>
 </div>
-
 </body>
 </html>

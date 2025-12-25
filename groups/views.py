@@ -40,23 +40,23 @@ class GroupDetailView(LoginRequiredMixin, DetailView):
 
         return context
     
-    def post(self, request, *args, **kwargs):
-        group = self.get_object()
-        if request.user not in group.members.all():
-            return HttpResponseForbidden("You are not a member of this group.")
+    # def post(self, request, *args, **kwargs):
+    #     group = self.get_object()
+    #     if request.user not in group.members.all():
+    #         return HttpResponseForbidden("You are not a member of this group.")
 
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.group = group
-            message.sender = request.user
-            message.save()
-            group.save()
-            return redirect('groups:group-detail', uuid=group.uuid)
+    #     form = MessageForm(request.POST)
+    #     if form.is_valid():
+    #         message = form.save(commit=False)
+    #         message.group = group
+    #         message.sender = request.user
+    #         message.save()
+    #         group.save()
+    #         return redirect('groups:group-detail', uuid=group.uuid)
         
-        context = self.get_context_data()
-        context['form'] = form
-        return render(request, self.template_name, context)
+    #     context = self.get_context_data()
+    #     context['form'] = form
+    #     return render(request, self.template_name, context)
 
 class GroupCreateView(LoginRequiredMixin, CreateView):
     model = Group

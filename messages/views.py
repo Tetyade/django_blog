@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, F, Value, CharField
+from django.db.models import Q, F, Value, CharField, Count
 from .models import Thread, Message
 from .forms import MessageForm
 from groups.models import Group
@@ -33,7 +33,11 @@ class ChatListView(LoginRequiredMixin, ListView):
             Q(participant1=user) | Q(participant2=user)
         ).annotate(
             last_update=F('updated_at'),
-            chat_type=Value('thread', output_field=CharField())
+            chat_type=Value('thread', output_field=CharField()), 
+            unread_count=Count(
+                'messages',
+                filter=~Q(messages__read_by=user) & ~Q(messages__sender=user)
+            )
         )
 
         # додаємо атрибут other_user прямо тут
@@ -45,7 +49,11 @@ class ChatListView(LoginRequiredMixin, ListView):
             members=user
         ).annotate(
             last_update=F('updated_at'),
-            chat_type=Value('group', output_field=CharField())
+            chat_type=Value('group', output_field=CharField()), 
+            unread_count=Count(
+                'messages',
+                filter=~Q(messages__read_by=user) & ~Q(messages__sender=user)
+            )
         )
 
         # об’єднуємо та сортуємо
@@ -76,19 +84,19 @@ class ThreadDetailView(LoginRequiredMixin, DetailView):
             context['other_user'] = thread.participant1
         return context
     
-    def post(self, request, *args, **kwargs):
-        thread = self.get_object()
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.thread = thread
-            message.sender = request.user
-            message.save()
-            thread.save()
-            return redirect('messages:thread-detail', uuid=thread.uuid)
-        context = self.get_context_data()
-        context['form'] = form
-        return self.render_to_response(context)
+    # def post(self, request, *args, **kwargs):
+    #     thread = self.get_object()
+    #     form = MessageForm(request.POST)
+    #     if form.is_valid():
+    #         message = form.save(commit=False)
+    #         message.thread = thread
+    #         message.sender = request.user
+    #         message.save()
+    #         thread.save()
+    #         return redirect('messages:thread-detail', uuid=thread.uuid)
+    #     context = self.get_context_data()
+    #     context['form'] = form
+    #     return self.render_to_response(context)
 
 def start_thread(request, user_uuid):
     if not request.user.is_authenticated:

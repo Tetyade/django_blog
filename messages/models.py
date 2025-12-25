@@ -35,7 +35,11 @@ class Message(models.Model):
     )
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
+    read_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="read_private_messages",
+        blank=True
+    )
 
 
 # Сигнал для оновлення updated_at у Thread після нового повідомлення

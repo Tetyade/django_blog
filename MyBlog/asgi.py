@@ -10,6 +10,7 @@ from channels.auth import AuthMiddlewareStack
 
 from messages.consumers import ThreadConsumer
 from groups.consumers import GroupConsumer
+from notifications.consumers import NotificationConsumer
 
 django_asgi_app = get_asgi_application()
 
@@ -19,6 +20,7 @@ application = ProtocolTypeRouter({
         URLRouter([
             path("ws/thread/<uuid:uuid>/", ThreadConsumer.as_asgi()),
             path("ws/group/<uuid:uuid>/", GroupConsumer.as_asgi()),
+            path("ws/notifications/", NotificationConsumer.as_asgi()),
         ])
     )
 })
