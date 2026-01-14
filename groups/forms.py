@@ -27,10 +27,8 @@ class GroupCreateForm(forms.ModelForm):
         data = kwargs.pop('data', None)
         super().__init__(*args, **kwargs)
 
-        # Взаємні фоловери
         mutual_followers = user.following_set.filter(following__following_set__following=user)
 
-        # Фільтр по username, якщо є GET-параметр search
         if data and data.get('search'):
             search = data.get('search').strip()
             mutual_followers = mutual_followers.filter(username__icontains=search)
@@ -40,7 +38,7 @@ class GroupCreateForm(forms.ModelForm):
 
 class GroupCreateForm(forms.ModelForm):
     members = forms.ModelMultipleChoiceField(
-        queryset=User.objects.none(),  # спочатку порожній queryset
+        queryset=User.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="Додати учасників (тільки взаємні підписки)"
@@ -51,10 +49,9 @@ class GroupCreateForm(forms.ModelForm):
         fields = ['name', 'members']
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user')  # отримуємо поточного користувача
+        user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
 
-        # отримуємо користувачів з взаємною підпискою
         mutual_following = User.objects.filter(
             id__in=Follow.objects.filter(follower=user)
                                    .values_list('following', flat=True)

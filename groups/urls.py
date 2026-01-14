@@ -15,6 +15,4 @@ urlpatterns = [
     path("<uuid:uuid>/add-member/", views.add_member, name="add-member"),
     path("create/", views.GroupCreateView.as_view(), name="create-group"),
     path('ajax/search-followers/', views.search_mutual_followers, name='search-followers'),
-
-
 ]

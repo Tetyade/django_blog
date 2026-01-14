@@ -31,14 +31,7 @@ class Comment(models.Model):
     media = models.FileField(upload_to='comments_media/', null=True, blank=True)
 
     def __str__(self):
-        return f"Comment by {self.author} on {self.task}"
-    
-    # @property
-    # def liked_by_current_user(self):
-    #     # спочатку встановимо `current_user` у view
-    #     if hasattr(self, 'current_user'):
-    #         return self.likes.filter(user=self.current_user).exists()
-    #     return False
+        return f"Comment by {self.author} on {self.post}"
     
 class CommentLike(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")

@@ -1,0 +1,201 @@
+{% extends "posts/base.html" %}
+{% load static %}
+
+{% block title %}Search Users{% endblock %}
+
+{% block content %}
+<div class="page-container" style="max-width: 600px; margin: 0 auto; padding-top: 40px;">
+
+    <div class="search-header">
+        <input type="text" id="search-input" placeholder="Start typing a username..." autocomplete="off">
+    </div>
+
+    <ul id="results-list" class="results-list">
+        <li class="empty-state">Enter a name to search users.</li>
+    </ul>
+
+</div>
+<style>
+    .search-header { text-align: center; margin-bottom: 30px; padding-top: 85px; }
+    .search-header h1 { font-size: 28px; margin-bottom: 20px; color: #333; }
+    
+    #search-input { 
+        width: 100%; 
+        padding: 16px 20px; 
+        font-size: 18px; 
+        border: 2px solid #eee; 
+        border-radius: 30px; 
+        outline: none; 
+        background-color: #fff; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        transition: all 0.3s; 
+        box-sizing: border-box; 
+    }
+    #search-input:focus { border-color: #333; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    
+    .results-list { 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        width: 100%;
+    }
+    
+    .empty-state { text-align: center; color: #999; margin-top: 40px; font-size: 16px; }
+
+    .user-result-card {
+        background: #fff;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px 20px;
+        border-radius: 16px;
+        margin-bottom: 15px;
+        
+        display: flex;
+        align-items: center; 
+        justify-content: space-between;
+        text-align: left;
+        
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        transition: transform 0.2s;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .user-result-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .user-info-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        color: inherit;
+        flex-grow: 1; 
+        margin-right: 20px;
+        justify-content: flex-start; 
+    }
+
+    .search-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .search-avatar.placeholder {
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #555;
+        font-size: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+        word-break: break-all;
+    }
+
+    .user-action {
+        flex-shrink: 0;
+    }
+
+    .action-btn {
+        padding: 8px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .btn-follow { background-color: #222; color: #fff; }
+    .btn-follow:hover { background-color: #000; }
+    .btn-unfollow { background-color: #eee; color: #333; }
+    .btn-unfollow:hover { background-color: #ddd; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const resultsList = document.getElementById('results-list');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length === 0) {
+            resultsList.innerHTML = '<li class="empty-state">Enter a name to search users.</li>';
+            return;
+        }
+        debounceTimer = setTimeout(() => {
+            fetchUsers(query);
+        }, 300);
+    });
+
+    function fetchUsers(query) {
+        fetch(`/auth/search/?q=${encodeURIComponent(query)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            renderResults(data.users);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function renderResults(users) {
+        resultsList.innerHTML = '';
+
+        if (users.length === 0) {
+            resultsList.innerHTML = '<li class="empty-state">No users found 😔</li>';
+            return;
+        }
+
+        users.forEach(user => {
+            let avatarHtml = '';
+            if (user.avatar_url) {
+                avatarHtml = `<img src="${user.avatar_url}" class="search-avatar">`;
+            } else {
+                avatarHtml = `<div class="search-avatar placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
+            }
+            let btnHtml = '';
+            if (user.is_following) {
+                btnHtml = `<a href="/auth/unfollow/${user.uuid}/" class="action-btn btn-unfollow">Unfollow</a>`;
+            } else {
+                btnHtml = `<a href="/auth/follow/${user.uuid}/" class="action-btn btn-follow">Follow</a>`;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'user-result-card';
+            li.innerHTML = `
+                <a href="${user.profile_url}" class="user-info-left">
+                    ${avatarHtml}
+                    <span class="user-name">${user.username}</span>
+                </a>
+                <div class="user-action">
+                    ${btnHtml}
+                </div>
+            `;
+            resultsList.appendChild(li);
+        });
+    }
+</script>
+{% endblock %}

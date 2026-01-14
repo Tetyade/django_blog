@@ -27,6 +27,10 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('auth_system:profile', args=[str(self.uuid)])
+    
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name="following_set", on_delete=models.CASCADE)
     following = models.ForeignKey(User, related_name="followers_set", on_delete=models.CASCADE)

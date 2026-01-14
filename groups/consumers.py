@@ -49,7 +49,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
         group = await self.get_group()
         msg = await self.create_message(group, user, text)
 
-        # 1. Повідомлення в сам чат (для відображення історії)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -61,14 +60,13 @@ class GroupConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        # 2. Popup всім іншим учасникам групи (для повідомлень)
         recipients = await self.get_group_user_ids(group, user)
 
         for user_id in recipients:
             await self.channel_layer.group_send(
                 f"user_{user_id}",
                 {
-                    "type": "notify_message", # Це піде і в NotificationConsumer, і сюди
+                    "type": "notify_message",
                     "text": msg.text,
                     "sender": user.username,
                     "group_name": group.name,
@@ -90,7 +88,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_group_user_ids(self, group, sender):
-        # Повертаємо ID всіх учасників крім відправника
         return list(
             group.members
             .exclude(id=sender.id)

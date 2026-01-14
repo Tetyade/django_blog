@@ -1,8 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-# accounts/views.py
 from django.views.generic.edit import FormView
 from django.contrib.auth import login
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from .forms import RegisterForm
 from django.contrib.auth.views import LoginView
 from django.views.generic import DetailView, UpdateView
@@ -13,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from posts.models import Post, PostLike
+from django.http import JsonResponse
 
 class UserRegisterView(FormView):
     template_name = "auth_system/register.html"
@@ -33,7 +33,7 @@ class UserLoginView(LoginView):
 
 class MyProfileView(LoginRequiredMixin, DetailView):
     model = CustomUser
-    template_name = "auth_system/profile.html"
+    template_name = "posts/author_detail.html"
     context_object_name = "user_profile"
 
     def get_object(self, queryset=None):
@@ -43,29 +43,18 @@ class MyProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         user = self.get_object()
 
-        # Всі пости користувача
         posts = user.posts.all().order_by('-created_at')
 
-        # Додаємо властивість для шаблону (як у списку постів)
         for post in posts:
             post.post_liked_by_current_user = PostLike.objects.filter(post=post, user=self.request.user).exists()
 
-        # Пагінація
         paginator = Paginator(posts, 10)
         page_number = self.request.GET.get("page")
         page_obj = paginator.get_page(page_number)
         context['page_obj'] = page_obj
+        context['author'] = user
 
-        return context
-    
-    # def get_context_data(self, **kwargs):
-    #     # зробити кількість постів, кількість фоловерів та тим за ким слідкуєщ
-    #     context = super().get_context_data(**kwargs)
-    #     user = self.get_object()
-
-    #     context['user-stats']
-
-        
+        return context      
 
 class ProfileView(DetailView):
     model = CustomUser
@@ -99,19 +88,16 @@ class ProfileView(DetailView):
 
         return context
 
-
 class MyProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = CustomUser
     template_name = "auth_system/profile_update.html"
     fields = ["username", "email", "first_name", "last_name"]
 
     def get_object(self, queryset=None):
-        # завжди повертаємо саме поточного користувача
         return self.request.user
     
     def get_success_url(self):
         return reverse_lazy("auth_system:my-profile")
-    
 
 @login_required
 def follow_user(request, user_uuid):
@@ -127,7 +113,6 @@ def follow_user(request, user_uuid):
     else:
         messages.warning(request, f"Ви вже підписані на {user_to_follow.username}.")
     return redirect("auth_system:profile", uuid=user_uuid)
-
 
 @login_required
 def unfollow_user(request, user_uuid):
@@ -150,12 +135,11 @@ def followers_list(request, user_uuid):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "auth_system/followers_list.html", {
+    return render(request, "auth_system/follow_list.html", {
         "user_profile": user,
         "page_obj": page_obj,
         "type": "followers"
     })
-
 
 @login_required
 def following_list(request, user_uuid):
@@ -166,8 +150,42 @@ def following_list(request, user_uuid):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "auth_system/following_list.html", {
+    return render(request, "auth_system/follow_list.html", {
         "user_profile": user,
         "page_obj": page_obj,
         "type": "following"
     })
+
+@login_required
+def search_users(request):
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+    if is_ajax:
+        query = request.GET.get('q', '')
+        data = []
+
+        if query:
+            users = CustomUser.objects.filter(
+                username__icontains=query
+            ).exclude(id=request.user.id)[:20]
+
+            for user in users:
+                is_following = Follow.objects.filter(
+                    follower=request.user, 
+                    following=user
+                ).exists()
+
+                avatar_url = None
+                if hasattr(user, 'profile') and user.profile.avatar:
+                    avatar_url = user.profile.avatar.url
+
+                data.append({
+                    'uuid': str(user.uuid),
+                    'username': user.username,
+                    'avatar_url': avatar_url,
+                    'is_following': is_following,
+                    'profile_url': reverse('auth_system:profile', kwargs={'uuid': user.uuid})
+                })
+        
+        return JsonResponse({'users': data})
+    return render(request, 'auth_system/user_search.html')

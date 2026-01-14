@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserLoginView, UserRegisterView, ProfileView, MyProfileView, MyProfileUpdateView, follow_user, unfollow_user, followers_list, following_list
+from .views import UserLoginView, UserRegisterView, ProfileView, MyProfileView, MyProfileUpdateView, follow_user, unfollow_user, followers_list, following_list, search_users
 # from rest_framework.authtoken.views import obtain_auth_token
 from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
@@ -37,5 +37,6 @@ urlpatterns = [
     path("unfollow/<uuid:user_uuid>/", unfollow_user, name="unfollow"),
     path("followers/<uuid:user_uuid>/", followers_list, name="followers-list"),
     path("following/<uuid:user_uuid>/", following_list, name="following-list"),
+    path("search/", search_users, name="user-search"),
 ]
 

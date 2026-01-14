@@ -10,6 +10,7 @@ class NotificationVerb(models.TextChoices):
     LIKE = "like", "liked your post"
     COMMENT = "comment", "commented on your post"
     FOLLOW = "follow", "started following you"
+    COMMENT_LIKE = "comment_like", "liked your comment"
 
 class Notification(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

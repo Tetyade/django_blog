@@ -13,14 +13,14 @@ class CommentForm(forms.ModelForm):
                 "rows": 2,
                 "placeholder": "Write here...",
                 "style": (
-                    "width:100%; "          # повна ширина
+                    "width:100%; "
                     "padding:12px; "
                     "border-radius:14px; "
                     "border:1px solid #ccc; "
                     "font-size:14px; "
                     "font-family:inherit; "
                     "resize:none; "
-                    "box-sizing:border-box;"  # враховує padding у ширину
+                    "box-sizing:border-box;"
                 )
             }),
         }

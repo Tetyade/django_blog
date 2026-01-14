@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.urls import reverse_lazy
 from .models import Post, PostLike
 from comments.models import CommentLike, Comment
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
-
+from .forms import PostForm
 
 class PostListView(ListView):
     model = Post
@@ -61,3 +63,31 @@ def toggle_like_post(request, uuid):
 
     return redirect("post:post-detail", uuid=post.uuid)
 
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'posts/post_form.html'
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'posts/post_form.html'
+    slug_field = 'uuid'
+    slug_url_kwarg = 'uuid'
+
+    def get_queryset(self):
+        return Post.objects.filter(author=self.request.user)
+
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'posts/post_confirm_delete.html'
+    success_url = reverse_lazy('post:home') # Куди перекине після видалення
+    slug_field = 'uuid'
+    slug_url_kwarg = 'uuid'
+
+    def get_queryset(self):
+        # Це гарантує, що видалити може ТІЛЬКИ автор
+        return Post.objects.filter(author=self.request.user)

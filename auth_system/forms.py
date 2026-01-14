@@ -17,10 +17,6 @@ class RegisterForm(CustomUserCreationForm):
     profile_picture = forms.ImageField(required=False)
 
 
-    # class Meta:
-    #     model = CustomUser
-    #     fields = ("first_name", "last_name", "username", "email", "password1", "password2")
-
     def clean_email(self):
         email = self.cleaned_data["email"].lower()
         if CustomUser.objects.filter(email__iexact=email).exists():
