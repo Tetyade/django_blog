@@ -1,0 +1,141 @@
+{% extends "posts/base.html" %}
+{% load static %}
+
+{% block content %}
+    
+    <div class="page-header">
+        <h1>All Posts</h1>
+        
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'post:post-create' %}" class="create-post-btn">
+                + New Post
+            </a>
+        {% endif %}
+    </div>
+
+    {% if posts %}
+        <ul class="post-list">
+            {% for post in posts %}
+                <li class="post-card" onclick="window.location.href='{% url 'post:post-detail' post.uuid %}'" style="cursor: pointer;">
+                    
+                    <div class="post-header">
+                        <a href="{% url 'auth_system:profile' post.author.uuid %}" class="author-link" onclick="event.stopPropagation();">
+                            <div class="author-row">
+                                {% if post.author.profile.avatar %}
+                                    <img class="avatar-circle-small" src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}">
+                                {% else %}
+                                    <div class="avatar-circle-small placeholder">{{ post.author.username|slice:":1" }}</div>
+                                {% endif %}
+                                
+                                <div class="author-meta">
+                                    <strong>{{ post.author }}</strong>
+                                    <span class="time">{{ post.created_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <h2>{{ post.title }}</h2>
+
+                    <p>{{ post.content|truncatewords:30 }}</p>
+
+                    {# 🔥 ДОДАНО: Відображення зображення поста #}
+                    {% if post.image %}
+                        <div class="post-image-wrapper">
+                            <img src="{{ post.image.url }}" alt="Post Image" loading="lazy">
+                        </div>
+                    {% endif %}
+
+                    <div class="post-actions" onclick="event.stopPropagation();">
+                        
+                        {% if request.user.is_authenticated %}
+                            <form class="like-form" action="{% url 'post:post-like' post.uuid %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="like-btn">
+                                    {% if post.post_liked_by_current_user %}❤️{% else %}🤍{% endif %}
+                                </button>
+                                <span class="like-count">{{ post.likes_post.count }}</span>
+                            </form>
+                        {% else %}
+                            <div class="like-disabled" style="display: inline-flex; align-items: center; gap: 5px;">
+                                🤍 <span class="like-count">{{ post.likes_post.count }}</span>
+                            </div>
+                        {% endif %}
+
+                        <a class="comment-icon" href="{% url 'post:post-detail' post.uuid %}">
+                            💬
+                        </a>
+                    </div>
+
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div style="text-align: center; margin-top: 50px; color: #777;">
+            <p>No posts yet.</p>
+            {% if request.user.is_authenticated %}
+                <p>Be the first to <a href="{% url 'post:post-create' %}" style="color: #333; font-weight: bold;">create one</a>!</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+<script>
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        const url = form.action;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            form.querySelector('.like-btn').textContent = data.liked ? '❤️' : '🤍';
+            form.querySelector('.like-count').textContent = data.likes_count;
+        });
+    });
+});
+</script>
+
+<style>
+    /* ... Твої попередні стилі ... */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 100px;}
+    .page-header h1 { margin: 0; font-size: 28px; }
+    .create-post-btn { background-color: #222; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; transition: background-color 0.3s, transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .create-post-btn:hover { background-color: #000; transform: translateY(-2px); }
+    .post-list { list-style: none; padding: 0; }
+    .post-card { padding: 20px; margin-bottom: 20px; border-radius: 16px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+    .post-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    .author-link { text-decoration: none; color: inherit; display: inline-block; }
+    .author-link:hover strong { text-decoration: underline; }
+    .author-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .avatar-circle-small { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+    .avatar-circle-small.placeholder { background-color: #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; }
+    .author-meta { display: flex; flex-direction: column; }
+    .author-meta .time { font-size: 0.85em; color: #999; }
+
+    /* 🔥 НОВІ СТИЛІ ДЛЯ ЗОБРАЖЕННЯ */
+    .post-image-wrapper {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+
+    .post-image-wrapper img {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        object-fit: cover;
+        display: block;
+    }
+</style>
+
+{% endblock %}

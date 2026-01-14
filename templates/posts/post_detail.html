@@ -1,0 +1,296 @@
+{% extends "posts/base.html" %}
+{% load static %}
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+
+    <div class="container" style="padding-top: 40px;"> <div class="post-detail-card large-card">
+            
+            {# --- ХЕДЕР ПОСТА --- #}
+            <div class="post-header">
+                {% if post.author.profile.avatar %}
+                    <img class="avatar-circle" src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}">
+                {% else %}
+                    <div class="avatar-circle placeholder">{{ post.author.username|slice:":1" }}</div>
+                {% endif %}
+                <div class="author-info">
+                    <strong><a href="{% url 'auth_system:profile' post.author.uuid %}" style="text-decoration: none; color: inherit;">{{ post.author }}</a></strong>
+                    <span class="time">{{ post.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                
+            </div>
+
+            <h2>{{ post.title }}</h2>
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">{{ post.content }}</p>
+
+            {# 🔥 ДОДАНО: ВІДОБРАЖЕННЯ КАРТИНКИ --- #}
+            {% if post.image %}
+                <div class="detail-image-container">
+                    <img src="{{ post.image.url }}" alt="Post Image">
+                </div>
+            {% endif %}
+
+            <div class="detail-likes">
+                {# --- ЛОГІКА ЛАЙКІВ ПОСТА --- #}
+                {% if request.user.is_authenticated %}
+                    <form class="like-form" action="{% url 'post:post-like' post.uuid %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="detail-like-btn">
+                            {% if post.post_liked_by_current_user %}❤️{% else %}🤍{% endif %}
+                        </button>
+                        <span class="like-count">{{ post.likes_post.count }}</span>
+                    </form>
+                {% else %}
+                    <div class="like-disabled">
+                        🤍 <span class="like-count">{{ post.likes_post.count }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <p class="date-info">Updated: {{ post.updated_at|date:"d.m.Y H:i" }}</p>
+            {% if request.user == post.author %}
+                <div class="post-owner-actions">
+                    {% comment %} <a href="{% url 'post:post-edit' post.uuid %}" class="action-icon edit" title="Edit">
+                        <i class="bi bi-pencil-fill"></i>
+                    </a> {% endcomment %}
+                    <a href="{% url 'post:post-delete' post.uuid %}" class="action-icon delete" title="Delete">
+                        <i class="bi bi-trash-fill"></i>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <hr class="divider">
+
+        <div class="comments-section">
+            
+            {# --- ФОРМА КОМЕНТАРІВ --- #}
+            {% if request.user.is_authenticated %}
+                <form method="post" action="{% url 'post:post-detail' post.uuid %}" class="comment-form styled-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn-dark">Post Comment</button>
+                </form>
+            {% else %}
+                <p style="text-align: center; color: gray; margin-bottom: 30px;">
+                    <a href="{% url 'auth_system:login' %}" style="color: #333; font-weight: bold;">Sign In</a> to leave a comment.
+                </p>
+            {% endif %}
+
+            <div class="posts-header" style="justify-content: space-between; display: flex; align-items: center;">
+                <h3 style="margin-top: 20px;">Comments ({{ comments.count }})</h3>
+                <a href="{% url 'post:home' %}" class="back-link">← Back to posts</a>
+            </div>
+
+            <ul style="list-style: none; padding: 0;">
+            {% if comments %}
+                {% for comment in comments %}
+                <li class="comment-card">
+                    <div class="comment-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if comment.author.profile.avatar %}
+                                <img class="avatar-circle" style="width: 35px; height: 35px;" src="{{ comment.author.profile.avatar.url }}" alt="{{ comment.author.username }}">
+                            {% else %}
+                                <div class="avatar-circle placeholder" style="width: 35px; height: 35px; font-size: 14px;">{{ comment.author.username|slice:":1" }}</div>
+                            {% endif %}
+                            <strong>{{ comment.author }}</strong>
+                        </div>
+                        <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    
+                    <p class="comment-content">{{ comment.content }}</p>
+
+                    <div class="comment-actions">
+                        {# --- ЛОГІКА ЛАЙКІВ КОМЕНТАРІВ --- #}
+                        {% if request.user.is_authenticated %}
+                            <form action="{% url 'comments:comment-like' comment.pk %}" method="post" style="display: inline-block;">
+                                {% csrf_token %}
+                                <button type="submit" style="background: none; border: none; cursor: pointer;">
+                                    {% if comment.liked_by_current_user %}❤️{% else %}🤍{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <span>🤍</span>
+                        {% endif %}
+                        <span>{{ comment.likes.count }}</span>
+
+                        {# Видалення #}
+                        {% if request.user.is_staff or request.user == comment.author %}
+                            <form action="{% url 'comments:comment-delete' comment.pk %}" method="post" style="display: inline-block; margin-left: 10px;">
+                                {% csrf_token %}
+                                <button type="submit" style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 12px;">Delete</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #999;">Ще немає коментарів. Будьте першим!</p>
+            {% endif %}
+            </ul>
+        </div>
+    </div>
+
+{# Стилі для цієї сторінки #}
+<style>
+    .post-detail-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        margin-bottom: 40px;
+    }
+    
+    /* 🔥 Стилі для картинки в деталях */
+    .detail-image-container {
+        margin: 25px 0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        text-align: center; /* Центруємо картинку */
+        background-color: #f9f9f9;
+    }
+    
+    .detail-image-container img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .detail-likes {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-like-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        margin-right: 5px;
+    }
+
+    .comment-card {
+        background: #f9f9f9;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .btn-dark {
+        background: #222;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .btn-dark:hover { background: #000; }
+
+
+    .post-owner-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-icon {
+        text-decoration: none;
+        font-size: 16px; /* Розмір іконки */
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent; /* Щоб не стрибало при ховері */
+    }
+
+    /* Стиль олівця */
+    .action-icon.edit { 
+        color: #555; 
+        background: #f5f5f5; 
+    }
+    .action-icon.edit:hover { 
+        background: #e0e0e0; 
+        color: #222; 
+        border-color: #ccc;
+    }
+
+    /* Стиль смітника */
+    .action-icon.delete { 
+        color: #ff4d4d; 
+        background: #fff0f0; 
+    }
+    .action-icon.delete:hover { 
+        background: #ffe0e0; 
+        color: #d32f2f; 
+        border-color: #ffcccc;
+    }
+</style>
+
+<script>
+// Анімація появи
+const cards = document.querySelectorAll('.post-detail-card, .comment-card');
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.1 });
+cards.forEach(card => observer.observe(card));
+
+// AJAX для лайків
+document.querySelectorAll('.like-form, .comment-actions form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        // Пропускаємо кнопку видалення
+        if(form.action.includes('delete')) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const url = form.action;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.error) return;
+            
+            // Якщо це головний лайк поста
+            if(form.classList.contains('like-form')) {
+                form.querySelector('.detail-like-btn').textContent = data.liked ? '❤️' : '🤍';
+                form.querySelector('.like-count').textContent = data.likes_count;
+            } else {
+                // Якщо це коментар
+                form.querySelector('button').textContent = data.liked ? '❤️' : '🤍';
+                // Знаходимо лічильник поруч з кнопкою
+                const countSpan = form.nextElementSibling; 
+                if(countSpan) countSpan.textContent = data.likes_count;
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

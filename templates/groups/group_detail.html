@@ -1,0 +1,386 @@
+{% extends 'groups/base.html' %}
+{% load static %}
+{% block title %}Група {{ group.name }}{% endblock %}
+
+{% block content %}
+
+<div class="header-box">
+    <a href="{% url 'messages:thread-list' %}" class="back-link">← Чати</a>
+    <div class="header-center">
+        <span class="group-name">{{ group.name }}</span>
+        <div class="mini-members">
+            {% for member in group.members.all|slice:":5" %}
+                <span class="member">{{ member.username }}</span>
+            {% endfor %}
+            {% if group.members.count > 5 %}
+                <span class="more">+{{ group.members.count|add:"-5" }}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% if role != "member" %}
+    <button id="settings-btn" class="settings-btn">⋮</button>
+    {% endif %}
+</div>
+
+<div class="page-container" id="messages">
+    {% for msg in messages %}
+    <div class="message {% if msg.sender == request.user %}self{% else %}other{% endif %}">
+        {% if msg.sender != request.user %}
+            <strong>{{ msg.sender.username }}:</strong>
+        {% endif %}
+        {{ msg.text }}
+        <div class="message-time">{{ msg.created_at|date:"H:i d.m.Y" }}</div>
+    </div>
+    {% empty %}
+    <p id="no-messages" style="text-align:center;color:#999;">Поки немає повідомлень</p>
+    {% endfor %}
+</div>
+
+<form id="message-form" class="fixed-box form-box">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Надіслати</button>
+</form>
+
+<div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-window">
+        <h3>Налаштування групи</h3>
+        <button id="open-update" class="modal-option">Змінити назву групи</button>
+        <button id="open-members" class="modal-option">Учасники</button>
+        <form action="{% url 'groups:leave-group' group.uuid %}" method="POST">
+            {% csrf_token %}
+            <button class="leave-btn" type="submit">Вийти з групи</button>
+        </form>
+        {% if role == "owner" %}
+        <form action="{% url 'groups:delete-group' group.uuid %}" method="POST">
+            {% csrf_token %}
+            <button class="danger-btn" type="submit">Видалити групу</button>
+        </form>
+        {% endif %}
+        <button id="close-settings" class="close-modal">Закрити</button>
+    </div>
+</div>
+
+<div id="update-modal" class="modal-overlay hidden">
+    <div class="modal-window">
+        <h3>Редагувати групу</h3>
+        <form id="update-group-form" action="{% url 'groups:update' group.uuid %}" method="POST">
+            {% csrf_token %}
+            <label>Назва групи:</label>
+            <input type="text" name="name" value="{{ group.name }}" required class="input">
+            <button type="submit" class="save-btn">Зберегти</button>
+        </form>
+        <button id="close-update" class="close-modal">Закрити</button>
+    </div>
+</div>
+
+<div id="members-modal" class="modal-overlay hidden">
+    <div class="modal-window wide">
+        <h3>Учасники групи</h3>
+        <div class="add-user-box">
+            <h4>Додати користувача по username</h4>
+            <form method="POST" action="{% url 'groups:add-member' group.uuid %}">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username користувача" required class="input">
+                <button type="submit" class="save-btn">Додати</button>
+            </form>
+        </div>
+        <ul class="full-members-list">
+            {% for member in group.members.all %}
+            <li>
+                <span class="user">{{ member.username }}</span>
+                <div>
+                {% if member == group.owner %}
+                    <span class="tag owner">owner</span>
+                {% elif member in group.admins.all %}
+                    <span class="tag admin">admin</span>
+                    {% if role == "owner" %}
+                         <a class="action-btn danger" href="{% url 'groups:remove-admin' group.uuid member.id %}">Забрати адміна</a>
+                    {% endif %}
+                {% else %}
+                    {% if role == "owner" %}
+                         <a class="action-btn" href="{% url 'groups:add-admin' group.uuid member.id %}">Зробити адміном</a>
+                    {% endif %}
+                {% endif %}
+                {% if role in "owner admin" and member != group.owner %}
+                    <a class="action-btn danger" href="{% url 'groups:remove-member' group.uuid member.id %}">Видалити</a>
+                {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <button id="close-members" class="close-modal">Закрити</button>
+    </div>
+</div>
+
+<style>
+/* ==== СТИЛІ ==== */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header-box {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 720px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    padding: 12px 20px;
+    z-index: 100;
+}
+
+.header-box a { text-decoration: none; color: #000; font-weight: bold; }
+
+.header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.group-name { font-weight: bold; font-size: 18px; }
+.mini-members { display: flex; gap: 6px; font-size: 13px; margin-top: 2px; }
+.member { background: #ddd; padding: 2px 6px; border-radius: 6px; }
+.more { color: #555; }
+
+.settings-btn {
+    font-size: 22px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #000;
+}
+
+.page-container {
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: 90px;
+    padding-bottom: 90px;
+}
+
+#messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 110px 10px 160px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+}
+
+#messages::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+#messages {
+    scrollbar-width: none; /* Firefox */
+}
+
+.message {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.message.self { align-self: flex-end; }
+.message.other { align-self: flex-start; }
+
+.message strong {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 2px;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* === СЕКЦІЯ ФОРМИ === */
+form#message-form {
+    position: fixed; 
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 720px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    align-items: flex-end;
+}
+
+form#message-form p {
+    margin: 0;
+    flex-grow: 1; 
+    display: flex; 
+    width: 100%; 
+}
+
+/* ГРУБШЕ ПОЛЕ */
+form#message-form textarea {
+    flex-grow: 1;
+    resize: none;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    min-height: 50px;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+/* ВІДЦЕНТРОВАНА КНОПКА */
+form#message-form button {
+    height: 50px;
+    padding: 0 20px;
+    border-radius: 18px;
+    border: none;
+    background: #000;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+form#message-form button:hover { opacity: 0.9; }
+
+/* Modal styles (стандартні) */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; justify-content: center; align-items: center; z-index: 200; }
+.hidden { display: none; }
+.modal-window { background: #fff; padding: 20px; border-radius: 12px; width: 340px; }
+.modal-window.wide { width: 460px; }
+.modal-option, .leave-btn, .danger-btn, .save-btn, .close-modal { width: 100%; padding: 10px; margin: 8px 0; border: none; cursor: pointer; }
+.modal-option { background: #eee; }
+.leave-btn { background: #ffe5e5; color: #cc0000; border: 1px solid #cc0000; }
+.danger-btn { background: #ff4444; color: white; }
+.save-btn { background: #4f155f; color: white; }
+.close-modal { background: #ddd; }
+.full-members-list li { display: flex; justify-content: space-between; padding: 6px 0; }
+.action-btn { margin-left: 10px; font-size: 12px; padding: 4px 6px; background: #ddd; border-radius: 6px; text-decoration: none; color: #000;}
+.action-btn.danger { background: #ffcccc; color: #cc0000; }
+.input { width: 100%; padding: 7px; margin-bottom: 12px; border: 1px solid #ccc; }
+.tag { padding: 2px 6px; border-radius: 6px; font-size: 12px; margin-left: 6px; }
+.tag.owner { background: #ffd966; }
+.tag.admin { background: #c6e0ff; }
+</style>
+
+<script>
+// Змінні
+const currentUserUUID = "{{ request.user.uuid }}";
+const groupUUID = "{{ group.uuid }}";
+const container = document.getElementById("messages");
+
+// Модалки та UI
+const settingsBtn = document.getElementById("settings-btn");
+const settingsModal = document.getElementById("settings-modal");
+const updateModal = document.getElementById("update-modal");
+const membersModal = document.getElementById("members-modal");
+const form = document.getElementById("message-form");
+const textarea = form.querySelector("textarea");
+
+const scrollToBottom = () => {
+    container.scrollTop = container.scrollHeight;
+};
+window.onload = scrollToBottom;
+
+// Обробка модалок
+document.getElementById("open-update").onclick = () => {
+    settingsModal.classList.add("hidden");
+    updateModal.classList.remove("hidden");
+};
+document.getElementById("open-members").onclick = () => {
+    settingsModal.classList.add("hidden");
+    membersModal.classList.remove("hidden");
+};
+document.getElementById("close-settings").onclick = () => settingsModal.classList.add("hidden");
+document.getElementById("close-update").onclick = () => updateModal.classList.add("hidden");
+document.getElementById("close-members").onclick = () => membersModal.classList.add("hidden");
+settingsBtn?.addEventListener("click", () => settingsModal.classList.remove("hidden"));
+
+// WebSocket
+const socket = new WebSocket("ws://" + window.location.host + "/ws/group/" + groupUUID + "/");
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    socket.send(JSON.stringify({ text }));
+    textarea.value = "";
+    textarea.style.height = '50px'; 
+});
+
+if (textarea) {
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+}
+
+// === ОНОВЛЕНИЙ КОД SOCKET.ONMESSAGE ===
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "notify_message") {
+        return; 
+    }
+
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message");
+
+    const timeDiv = document.createElement("div");
+    timeDiv.classList.add("message-time");
+    timeDiv.textContent = data.created_at;
+
+    // позиція бульбашки і текст
+    if (data.sender_uuid === currentUserUUID) {
+        msgDiv.classList.add("self"); // праворуч
+        msgDiv.textContent = data.text; // без імені
+        msgDiv.appendChild(timeDiv);
+    } else {
+        msgDiv.classList.add("other"); // зліва
+        msgDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
+        msgDiv.appendChild(timeDiv);
+    }
+    
+    // Якщо був напис "немає повідомлень", прибираємо його
+    const noMsg = document.getElementById("no-messages");
+    if (noMsg) noMsg.remove();
+
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+};
+</script>
+
+{% endblock %}

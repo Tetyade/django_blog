@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'blog/styles.css' %}">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        /* Стилі для навігації з іконками */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Відступ між іконками */
+        }
+
+        .nav-icon {
+            font-size: 20px; /* Розмір іконки */
+            color: #333;
+            text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-icon:hover {
+            color: #000;
+            transform: scale(1.1); /* Легке збільшення при наведенні */
+        }
+
+        /* Перетворюємо кнопку Logout на іконку */
+        .logout-form {
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+            transition: color 0.2s, transform 0.2s;
+            display: flex; /* Щоб іконка була по центру */
+        }
+        .icon-btn:hover {
+            color: #d9534f; /* Червоний при наведенні на вихід */
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper">
+
+            <div class="nav-left">
+                <a href="{% url 'post:home' %}" style="font-weight: bold; font-size: 20px;">TheBlog</a>
+                
+                </div>
+
+            <div class="nav-right">
+                {% if user.is_authenticated %}
+                    
+                    <a href="{% url 'auth_system:user-search' %}" class="nav-icon" title="Search Users">
+                        <i class="bi bi-search"></i>
+                    </a>
+
+                    <a href="{% url 'notifications:list' %}" class="nav-icon" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                    </a>
+
+                    <a href="{% url 'messages:thread-list' %}" class="nav-icon" title="Direct Messages">
+                        <i class="bi bi-chat-dots"></i> </a>
+
+                    <a href="{% url 'auth_system:my-profile' %}" class="nav-icon" style="font-size: 16px; font-weight: 600;" title="My Profile">
+                        {{ user.username }}
+                    </a>
+
+                    <form method="post" action="{% url 'auth_system:logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </form>
+
+                {% else %}
+                    <a href="{% url 'auth_system:login' %}" style="margin-right: 15px;">Sign In</a>
+                    <a href="{% url 'auth_system:register' %}" class="create-post-btn" style="padding: 8px 16px; font-size: 14px;">Sign Up</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <div id="toast-container"></div>
+    <script src="{% static 'blog/js/notifications.js' %}"></script>
+    <style>
+       /* ... стилі тостів ... */
+       #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+       .toast { background: #222; color: #fff; padding: 12px 16px; margin-top: 10px; border-radius: 8px; min-width: 220px; animation: fadeIn 0.3s; }
+       .toast.hide { opacity: 0; transition: opacity 0.3s; }
+    </style>
+</body>
+</html>

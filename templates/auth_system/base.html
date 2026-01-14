@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Authentication{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'blog/styles.css' %}">
+</head>
+<body class="auth-page">
+
+    <div class="auth-card">
+        <h2 class="auth-header">{% block header %}Authorization{% endblock %}</h2>
+
+        {% if messages %}
+            <ul class="messages" style="list-style: none; padding: 0; margin-bottom: 20px;">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}" style="color: #ff3b30; font-size: 14px; margin-bottom: 5px;">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block form_block %}{% endblock %}
+    </div>
+
+</body>
+</html>

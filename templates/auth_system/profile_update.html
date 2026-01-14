@@ -1,0 +1,55 @@
+{% extends "auth_system/base.html" %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block header %}Update Profile{% endblock %}
+
+{% block form_block %}
+    {% if form.errors %}
+        <div class="debug-errors">
+            {{ form.errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'auth_system:my-profile-edit' %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.first_name.id_for_label }}">First name:</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="form-error">{{ form.first_name.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.last_name.id_for_label }}">Last name:</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="form-error">{{ form.last_name.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="form-error">{{ form.username.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email:</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="form-error">{{ form.email.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="submit-btn">Save changes</button>
+    </form>
+
+    <p class="form-note">
+        <a href="{% url 'auth_system:my-profile' %}">Back to profile</a>
+    </p>
+{% endblock %}
