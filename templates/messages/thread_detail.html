@@ -126,7 +126,6 @@ form#message-form p {
     width: 100%; 
 }
 
-/* ГРУБШЕ ПОЛЕ */
 form#message-form textarea {
     flex-grow: 1;
     resize: none;
@@ -139,7 +138,6 @@ form#message-form textarea {
     width: 100%; 
 }
 
-/* ВІДЦЕНТРОВАНА КНОПКА */
 form#message-form button {
     height: 50px;
     padding: 0 20px;
@@ -162,7 +160,7 @@ form#message-form button:hover { opacity: 0.9; }
 <body>
 
 <header class="header-box">
-    <a href="{% url 'messages:thread-list' %}">← Чати</a>
+    <a href="{% url 'messages:thread-list' %}">← Chats</a>
     <span>{{ other_user.username }}</span>
 </header>
 
@@ -176,14 +174,14 @@ form#message-form button:hover { opacity: 0.9; }
         <div class="message-time">{{ msg.created_at|date:"H:i d.m.Y" }}</div>
     </div>
     {% empty %}
-    <p style="text-align:center;color:#999;">Поки немає повідомлень</p>
+    <p style="text-align:center;color:#999;">No messages yet</p>
     {% endfor %}
 </div>
 
 <form id="message-form" class="fixed-box form-box">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Надіслати</button>
+    <button type="submit">Send</button>
 </form>
 
 <script>

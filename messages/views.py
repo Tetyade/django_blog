@@ -11,16 +11,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-
-# class ThreadListView(ListView):
-#     model = Thread
-#     context_object_name = 'threads'
-#     template_name = 'messages/thread_list.html'
-
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Thread.objects.filter(Q(participant1=user) | Q(participant2=user)).order_by('-updated_at')
-
 class ChatListView(LoginRequiredMixin, ListView):
     template_name = 'messages/chat_list.html'
     context_object_name = 'chats'
@@ -28,7 +18,6 @@ class ChatListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
 
-        # 1-на-1 чати
         threads = Thread.objects.filter(
             Q(participant1=user) | Q(participant2=user)
         ).annotate(
@@ -39,8 +28,6 @@ class ChatListView(LoginRequiredMixin, ListView):
                 filter=~Q(messages__read_by=user) & ~Q(messages__sender=user)
             )
         )
-
-        # додаємо атрибут other_user прямо тут
         for thread in threads:
             thread.other_user = thread.participant2 if thread.participant1 == user else thread.participant1
 
@@ -55,8 +42,6 @@ class ChatListView(LoginRequiredMixin, ListView):
                 filter=~Q(messages__read_by=user) & ~Q(messages__sender=user)
             )
         )
-
-        # об’єднуємо та сортуємо
         combined = list(threads) + list(groups)
         combined.sort(key=lambda obj: obj.last_update, reverse=True)
 
@@ -83,20 +68,6 @@ class ThreadDetailView(LoginRequiredMixin, DetailView):
         else:
             context['other_user'] = thread.participant1
         return context
-    
-    # def post(self, request, *args, **kwargs):
-    #     thread = self.get_object()
-    #     form = MessageForm(request.POST)
-    #     if form.is_valid():
-    #         message = form.save(commit=False)
-    #         message.thread = thread
-    #         message.sender = request.user
-    #         message.save()
-    #         thread.save()
-    #         return redirect('messages:thread-detail', uuid=thread.uuid)
-    #     context = self.get_context_data()
-    #     context['form'] = form
-    #     return self.render_to_response(context)
 
 def start_thread(request, user_uuid):
     if not request.user.is_authenticated:
@@ -104,21 +75,17 @@ def start_thread(request, user_uuid):
 
     other_user = get_object_or_404(User, uuid=user_uuid)
 
-    # Перевірка, чи підписаний користувач
     if not request.user.following_set.filter(following=other_user).exists() and request.user != other_user:
-        # Можна додати повідомлення, що не можна писати тим, на кого не підписаний
         from django.contrib import messages
-        messages.error(request, "Ви не підписані на цього користувача.")
+        messages.error(request, "You are not following this user.")
         return redirect('auth_system:profile-view', uuid=user_uuid)
 
-    # Пошук існуючого thread
     thread = Thread.objects.filter(
         participant1=request.user, participant2=other_user
     ).first() or Thread.objects.filter(
         participant1=other_user, participant2=request.user
     ).first()
 
-    # Якщо нема — створюємо новий
     if not thread:
         thread = Thread.objects.create(participant1=request.user, participant2=other_user)
 

@@ -1,6 +1,6 @@
 from django import forms
 from .models import Post
-from django.utils.html import strip_tags # 🔥 Інструмент для видалення HTML тегів
+from django.utils.html import strip_tags
 
 class PostForm(forms.ModelForm):
     class Meta:

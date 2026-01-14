@@ -13,4 +13,3 @@ class MessageForm(forms.ModelForm):
                 'class': 'message-input',
             }),
         }
-

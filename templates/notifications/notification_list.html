@@ -3,7 +3,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Сповіщення</title>
+    <title>Notifications</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background: #fff; }
@@ -13,8 +13,6 @@
             margin: 0 auto;
             padding: 20px;
         }
-
-        /* Оновлений Header як у чатах */
         .header {
             display: flex;
             justify-content: space-between;
@@ -107,11 +105,11 @@
     <header class="header">
         <div class="header-left">
             <a href="{% url 'post:home' %}" class="home-link">← Home</a>
-            <h1>Сповіщення</h1>
+            <h1>Notifications</h1>
         </div>
 
         {% if notifications %}
-            <a href="{% url 'notifications:delete-all' %}" class="clear-btn" onclick="return confirm('Видалити всі сповіщення?')">Очистити все</a>
+            <a href="{% url 'notifications:delete-all' %}" class="clear-btn" onclick="return confirm('Видалити всі сповіщення?')">Clear all</a>
         {% endif %}
     </header>
 
@@ -140,21 +138,20 @@
                     
                     <span class="verb-text">
                         {% if n.verb == 'like' %}
-                            вподобав(ла) ваш допис
+                            liked your post: "{{ n.target.title }}"
                         {% elif n.verb == 'comment' %}
-                            {# Тепер content спрацює, якщо ти виправила signals.py #}
-                            прокоментував(ла): "{{ n.target.content|truncatechars:30 }}"
+                            commented: "{{ n.target.content|truncatechars:30 }}"
                         {% elif n.verb == 'comment_like' %}
-                            вподобав(ла) ваш коментар
+                            liked your comment
                         {% elif n.verb == 'follow' %}
-                            підписався(-лась) на вас
+                            followed you
                         {% else %}
-                            зробив дію
+                            did something
                         {% endif %}
                     </span>
                 </a>
                 
-                <span class="notif-time">{{ n.created_at|timesince }} тому</span>
+                <span class="notif-time">{{ n.created_at|timesince }} ago</span>
             </div>
 
             <a href="{% url 'notifications:delete' n.uuid %}" class="delete-btn" title="Видалити">×</a>
@@ -162,7 +159,7 @@
         </li>
         {% empty %}
             <div style="text-align: center; color: #999; margin-top: 50px;">
-                <p>Немає нових сповіщень 😴</p>
+                <p>No new notifications 😴</p>
             </div>
         {% endfor %}
     </ul>

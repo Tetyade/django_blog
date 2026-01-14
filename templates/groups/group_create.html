@@ -1,32 +1,31 @@
 {% extends 'groups/base.html' %}
-{% block title %}Створити групу{% endblock %}
+{% block title %}Creare Group{% endblock %}
 
 {% block content %}
 <div class="group-create-container">
-    <h2>Створити нову групу</h2>
+    <h2>Create a new group</h2>
 
     <form id="group-form" method="post">
         {% csrf_token %}
         <div class="form-group">
-            <label for="id_name">Назва групи:</label>
+            <label for="id_name">Group name:</label>
             <input type="text" name="name" id="id_name" required>
         </div>
 
         <div class="form-group">
-            <label>Додати учасників (взаємні фоловери):</label>
-            <input type="text" id="search-input" placeholder="Знайти користувача...">
+            <label>Add members (mutual followers):</label>
+            <input type="text" id="search-input" placeholder="Find user...">
 
             <div id="selected-users" class="members-box">
-                <h4>Вибрані користувачі:</h4>
+                <h4>Selected users:</h4>
                 <ul id="selected-list"></ul>
             </div>
 
             <div id="search-results" class="members-box">
-                <!-- результати AJAX пошуку -->
             </div>
         </div>
 
-        <button type="submit" class="save-btn">Створити групу</button>
+        <button type="submit" class="save-btn">Create group</button>
     </form>
 </div>
 
@@ -36,7 +35,7 @@ const resultsBox = document.getElementById('search-results');
 const selectedList = document.getElementById('selected-list');
 const selectedUsers = new Set();
 
-// Функція додати користувача у вибрані
+// Додавання користувача до вибраних
 function addUser(userId, username) {
     if (!selectedUsers.has(userId)) {
         selectedUsers.add(userId);
@@ -78,7 +77,6 @@ searchInput.addEventListener('input', () => {
         });
 });
 
-// Перед відправкою форми додаємо hidden поля для вибраних користувачів
 document.getElementById('group-form').addEventListener('submit', function(e) {
     selectedUsers.forEach(id => {
         const input = document.createElement('input');

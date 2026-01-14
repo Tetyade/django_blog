@@ -27,12 +27,12 @@ def delete_notification(request, uuid):
     notification = get_object_or_404(Notification, uuid=uuid, recipient=request.user)
     
     notification.delete()
-    messages.success(request, "Сповіщення видалено.")
+    messages.success(request, "Notification cleared.")
     
     return redirect('notifications:list')
 
 @login_required
 def delete_all_notifications(request):
     Notification.objects.filter(recipient=request.user).delete()
-    messages.success(request, "Всі сповіщення очищено.")
+    messages.success(request, "All notifications cleared.")
     return redirect('notifications:list')

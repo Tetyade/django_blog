@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5; /* Світло-сірий фон */
+            background-color: #f5f5f5;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -62,13 +62,13 @@
 
         .btn-group {
             display: flex;
-            flex-direction: column; /* Кнопки одна під одною на мобільному */
+            flex-direction: column;
             gap: 12px;
         }
 
         @media (min-width: 480px) {
             .btn-group {
-                flex-direction: row; /* В рядок на десктопі */
+                flex-direction: row;
                 justify-content: center;
             }
         }
@@ -82,7 +82,7 @@
             cursor: pointer;
             border: none;
             transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
-            flex: 1; /* Рівна ширина кнопок */
+            flex: 1;
         }
 
         button:active, a:active {
@@ -122,21 +122,21 @@
             <i class="bi bi-trash"></i>
         </div>
         
-        <h2>Видалити пост?</h2>
+        <h2>Delete post?</h2>
         
         <p>
-            Ви впевнені, що хочете назавжди видалити пост 
+            Are you sure you want to delete the post?
             <br>
             <span class="post-title-preview">"{{ object.title|truncatechars:30 }}"</span>?
             <br>
-            <span style="font-size: 14px; color: #999;">Цю дію неможливо скасувати.</span>
+            <span style="font-size: 14px; color: #999;">This action cannot be undone.</span>
         </p>
 
         <form method="post">
             {% csrf_token %}
             <div class="btn-group">
-                <a href="{% url 'post:post-detail' object.uuid %}" class="btn-cancel">Скасувати</a>
-                <button type="submit" class="btn-delete">Видалити</button>
+                <a href="{% url 'post:post-detail' object.uuid %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-delete">Delete</button>
             </div>
         </form>
     </div>

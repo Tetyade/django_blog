@@ -5,7 +5,7 @@
 {% block content %}
 
 <div class="header-box">
-    <a href="{% url 'messages:thread-list' %}" class="back-link">← Чати</a>
+    <a href="{% url 'messages:thread-list' %}" class="back-link">← Chats</a>
     <div class="header-center">
         <span class="group-name">{{ group.name }}</span>
         <div class="mini-members">
@@ -32,57 +32,57 @@
         <div class="message-time">{{ msg.created_at|date:"H:i d.m.Y" }}</div>
     </div>
     {% empty %}
-    <p id="no-messages" style="text-align:center;color:#999;">Поки немає повідомлень</p>
+    <p id="no-messages" style="text-align:center;color:#999;">No messages yet</p>
     {% endfor %}
 </div>
 
 <form id="message-form" class="fixed-box form-box">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Надіслати</button>
+    <button type="submit">Send</button>
 </form>
 
 <div id="settings-modal" class="modal-overlay hidden">
     <div class="modal-window">
-        <h3>Налаштування групи</h3>
-        <button id="open-update" class="modal-option">Змінити назву групи</button>
-        <button id="open-members" class="modal-option">Учасники</button>
+        <h3>Group settings</h3>
+        <button id="open-update" class="modal-option">Change group name</button>
+        <button id="open-members" class="modal-option">Members</button>
         <form action="{% url 'groups:leave-group' group.uuid %}" method="POST">
             {% csrf_token %}
-            <button class="leave-btn" type="submit">Вийти з групи</button>
+            <button class="leave-btn" type="submit">Leave group</button>
         </form>
         {% if role == "owner" %}
         <form action="{% url 'groups:delete-group' group.uuid %}" method="POST">
             {% csrf_token %}
-            <button class="danger-btn" type="submit">Видалити групу</button>
+            <button class="danger-btn" type="submit">Delete group</button>
         </form>
         {% endif %}
-        <button id="close-settings" class="close-modal">Закрити</button>
+        <button id="close-settings" class="close-modal">Close</button>
     </div>
 </div>
 
 <div id="update-modal" class="modal-overlay hidden">
     <div class="modal-window">
-        <h3>Редагувати групу</h3>
+        <h3>Update group</h3>
         <form id="update-group-form" action="{% url 'groups:update' group.uuid %}" method="POST">
             {% csrf_token %}
-            <label>Назва групи:</label>
+            <label>Group name:</label>
             <input type="text" name="name" value="{{ group.name }}" required class="input">
-            <button type="submit" class="save-btn">Зберегти</button>
+            <button type="submit" class="save-btn">Save</button>
         </form>
-        <button id="close-update" class="close-modal">Закрити</button>
+        <button id="close-update" class="close-modal">Close</button>
     </div>
 </div>
 
 <div id="members-modal" class="modal-overlay hidden">
     <div class="modal-window wide">
-        <h3>Учасники групи</h3>
+        <h3>Group members</h3>
         <div class="add-user-box">
-            <h4>Додати користувача по username</h4>
+            <h4>Add user by their username</h4>
             <form method="POST" action="{% url 'groups:add-member' group.uuid %}">
                 {% csrf_token %}
                 <input type="text" name="username" placeholder="Username користувача" required class="input">
-                <button type="submit" class="save-btn">Додати</button>
+                <button type="submit" class="save-btn">Add</button>
             </form>
         </div>
         <ul class="full-members-list">
@@ -95,26 +95,25 @@
                 {% elif member in group.admins.all %}
                     <span class="tag admin">admin</span>
                     {% if role == "owner" %}
-                         <a class="action-btn danger" href="{% url 'groups:remove-admin' group.uuid member.id %}">Забрати адміна</a>
+                         <a class="action-btn danger" href="{% url 'groups:remove-admin' group.uuid member.id %}">Remove admin</a>
                     {% endif %}
                 {% else %}
                     {% if role == "owner" %}
-                         <a class="action-btn" href="{% url 'groups:add-admin' group.uuid member.id %}">Зробити адміном</a>
+                         <a class="action-btn" href="{% url 'groups:add-admin' group.uuid member.id %}">Make admin</a>
                     {% endif %}
                 {% endif %}
                 {% if role in "owner admin" and member != group.owner %}
-                    <a class="action-btn danger" href="{% url 'groups:remove-member' group.uuid member.id %}">Видалити</a>
+                    <a class="action-btn danger" href="{% url 'groups:remove-member' group.uuid member.id %}">Remove</a>
                 {% endif %}
                 </div>
             </li>
             {% endfor %}
         </ul>
-        <button id="close-members" class="close-modal">Закрити</button>
+        <button id="close-members" class="close-modal">Close</button>
     </div>
 </div>
 
 <style>
-/* ==== СТИЛІ ==== */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -188,7 +187,7 @@ body {
     background: transparent;
 }
 #messages {
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
 }
 
 .message {
@@ -219,7 +218,6 @@ body {
     text-align: right;
 }
 
-/* === СЕКЦІЯ ФОРМИ === */
 form#message-form {
     position: fixed; 
     bottom: 10px;
@@ -244,7 +242,6 @@ form#message-form p {
     width: 100%; 
 }
 
-/* ГРУБШЕ ПОЛЕ */
 form#message-form textarea {
     flex-grow: 1;
     resize: none;
@@ -257,7 +254,6 @@ form#message-form textarea {
     width: 100%; 
 }
 
-/* ВІДЦЕНТРОВАНА КНОПКА */
 form#message-form button {
     height: 50px;
     padding: 0 20px;
@@ -275,7 +271,6 @@ form#message-form button {
 
 form#message-form button:hover { opacity: 0.9; }
 
-/* Modal styles (стандартні) */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; justify-content: center; align-items: center; z-index: 200; }
 .hidden { display: none; }
 .modal-window { background: #fff; padding: 20px; border-radius: 12px; width: 340px; }
@@ -296,12 +291,10 @@ form#message-form button:hover { opacity: 0.9; }
 </style>
 
 <script>
-// Змінні
 const currentUserUUID = "{{ request.user.uuid }}";
 const groupUUID = "{{ group.uuid }}";
 const container = document.getElementById("messages");
 
-// Модалки та UI
 const settingsBtn = document.getElementById("settings-btn");
 const settingsModal = document.getElementById("settings-modal");
 const updateModal = document.getElementById("update-modal");
@@ -314,7 +307,6 @@ const scrollToBottom = () => {
 };
 window.onload = scrollToBottom;
 
-// Обробка модалок
 document.getElementById("open-update").onclick = () => {
     settingsModal.classList.add("hidden");
     updateModal.classList.remove("hidden");
@@ -328,7 +320,6 @@ document.getElementById("close-update").onclick = () => updateModal.classList.ad
 document.getElementById("close-members").onclick = () => membersModal.classList.add("hidden");
 settingsBtn?.addEventListener("click", () => settingsModal.classList.remove("hidden"));
 
-// WebSocket
 const socket = new WebSocket("ws://" + window.location.host + "/ws/group/" + groupUUID + "/");
 
 form.addEventListener("submit", function(e) {
@@ -348,7 +339,6 @@ if (textarea) {
     });
 }
 
-// === ОНОВЛЕНИЙ КОД SOCKET.ONMESSAGE ===
 socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
 
@@ -363,18 +353,15 @@ socket.onmessage = function(event) {
     timeDiv.classList.add("message-time");
     timeDiv.textContent = data.created_at;
 
-    // позиція бульбашки і текст
     if (data.sender_uuid === currentUserUUID) {
-        msgDiv.classList.add("self"); // праворуч
-        msgDiv.textContent = data.text; // без імені
+        msgDiv.classList.add("self");
+        msgDiv.textContent = data.text;
         msgDiv.appendChild(timeDiv);
     } else {
-        msgDiv.classList.add("other"); // зліва
+        msgDiv.classList.add("other");
         msgDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
         msgDiv.appendChild(timeDiv);
     }
-    
-    // Якщо був напис "немає повідомлень", прибираємо його
     const noMsg = document.getElementById("no-messages");
     if (noMsg) noMsg.remove();
 

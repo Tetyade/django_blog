@@ -98,8 +98,8 @@
             font-size: 15px;
             color: gray;
             white-space: nowrap;      /* Текст в один рядок */
-            overflow: hidden;         /* Ховаємо зайве */
-            text-overflow: ellipsis;  /* Додаємо три крапки ... */
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .chat-last-message .author {
@@ -108,7 +108,6 @@
             margin-right: 4px;
         }
 
-        /* === НОВІ СТИЛІ ДЛЯ ПРАВОЇ ЧАСТИНИ === */
         .meta-info {
             display: flex;
             flex-direction: column;
@@ -124,13 +123,13 @@
         }
 
         .unread-badge {
-            background-color: #ff3b30; /* Колір як в iOS */
+            background-color: #ff3b30;
             color: white;
             font-size: 12px;
             font-weight: bold;
             min-width: 20px;
             height: 20px;
-            border-radius: 10px; /* Робить овал або коло */
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -148,7 +147,7 @@
         </div>
         <h1>Чати</h1>
         <div class="top-buttons">
-            <a href="{% url 'groups:create-group' %}">Створити групу</a>
+            <a href="{% url 'groups:create-group' %}">Create Group</a>
         </div>
     </header>
     
@@ -172,12 +171,12 @@
                             {% if chat.messages.last %}
                                 <span class="author">
                                     {% if chat.messages.last.sender == request.user %}
-                                        Ви:
+                                        You:
                                     {% endif %}
                                 </span>
                                 {{ chat.messages.last.text }}
                             {% else %}
-                                <em>Немає повідомлень</em>
+                                <em>No messages yet</em>
                             {% endif %}
                         </div>
                     </div>
@@ -207,14 +206,14 @@
                             {% if chat.messages.last %}
                                 <span class="author">
                                     {% if chat.messages.last.sender == request.user %}
-                                        Ви:
+                                        You:
                                     {% else %}
                                         {{ chat.messages.last.sender.username }}:
                                     {% endif %}
                                 </span>
                                 {{ chat.messages.last.text }}
                             {% else %}
-                                <em>Немає повідомлень</em>
+                                <em>No messages yet</em>
                             {% endif %}
                         </div>
                     </div>
@@ -237,7 +236,7 @@
 
         {% empty %}
             <li style="text-align: center; color: #999; margin-top: 40px;">
-                У вас поки немає чатів.
+                You don't have any chats yet.
             </li>
         {% endfor %}
     </ul>

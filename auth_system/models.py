@@ -10,13 +10,13 @@ def validate_image(image):
     # Перевірка розміру файлу
     max_size_mb = 3
     if image.size > max_size_mb * 1024 * 1024:
-        raise ValidationError(f"Зображення перевищує {max_size_mb}MB.")
+        raise ValidationError(f"Image exceeds {max_size_mb}MB.")
 
     # Перевірка типу файлу
     valid_mime_types = ['image/jpeg', 'image/png', 'image/webp']
     file_mime_type = image.file.content_type
     if file_mime_type not in valid_mime_types:
-        raise ValidationError("Дозволені лише JPEG, PNG або WebP файли.")
+        raise ValidationError("Permitted only JPEG, PNG або WebP files.")
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)

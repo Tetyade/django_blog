@@ -5,8 +5,6 @@
 {% block content %}
 
     <div class="container" style="padding-top: 40px;"> <div class="post-detail-card large-card">
-            
-            {# --- ХЕДЕР ПОСТА --- #}
             <div class="post-header">
                 {% if post.author.profile.avatar %}
                     <img class="avatar-circle" src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}">
@@ -21,9 +19,7 @@
             </div>
 
             <h2>{{ post.title }}</h2>
-            <p style="font-size: 16px; line-height: 1.6; color: #333;">{{ post.content }}</p>
-
-            {# 🔥 ДОДАНО: ВІДОБРАЖЕННЯ КАРТИНКИ --- #}
+            <p style="font-size: 16px; line-height: 
             {% if post.image %}
                 <div class="detail-image-container">
                     <img src="{{ post.image.url }}" alt="Post Image">
@@ -31,7 +27,6 @@
             {% endif %}
 
             <div class="detail-likes">
-                {# --- ЛОГІКА ЛАЙКІВ ПОСТА --- #}
                 {% if request.user.is_authenticated %}
                     <form class="like-form" action="{% url 'post:post-like' post.uuid %}" method="post">
                         {% csrf_token %}
@@ -125,7 +120,7 @@
                 </li>
                 {% endfor %}
             {% else %}
-                <p style="text-align: center; color: #999;">Ще немає коментарів. Будьте першим!</p>
+                <p style="text-align: center; color: #999;">No comments yet.</p>
             {% endif %}
             </ul>
         </div>
@@ -141,13 +136,12 @@
         margin-bottom: 40px;
     }
     
-    /* 🔥 Стилі для картинки в деталях */
     .detail-image-container {
         margin: 25px 0;
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        text-align: center; /* Центруємо картинку */
+        text-align: center;
         background-color: #f9f9f9;
     }
     
@@ -209,7 +203,7 @@
 
     .action-icon {
         text-decoration: none;
-        font-size: 16px; /* Розмір іконки */
+        font-size: 16px; 
         width: 36px;
         height: 36px;
         border-radius: 50%;
@@ -217,7 +211,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid transparent; /* Щоб не стрибало при ховері */
+        border: 1px solid transparent;
     }
 
     /* Стиль олівця */
@@ -259,7 +253,6 @@ cards.forEach(card => observer.observe(card));
 // AJAX для лайків
 document.querySelectorAll('.like-form, .comment-actions form').forEach(form => {
     form.addEventListener('submit', function(e){
-        // Пропускаємо кнопку видалення
         if(form.action.includes('delete')) return;
 
         e.preventDefault();
@@ -284,7 +277,6 @@ document.querySelectorAll('.like-form, .comment-actions form').forEach(form => {
             } else {
                 // Якщо це коментар
                 form.querySelector('button').textContent = data.liked ? '❤️' : '🤍';
-                // Знаходимо лічильник поруч з кнопкою
                 const countSpan = form.nextElementSibling; 
                 if(countSpan) countSpan.textContent = data.likes_count;
             }

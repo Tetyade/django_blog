@@ -26,8 +26,6 @@ class ThreadConsumer(AsyncWebsocketConsumer):
             f"user_{self.user.id}",
             self.channel_name
         )
-
-        # 🔥 ОЦЕ ГОЛОВНЕ — відмічаємо повідомлення як прочитані
         await self.mark_messages_as_read()
 
         await self.accept()
@@ -51,7 +49,6 @@ class ThreadConsumer(AsyncWebsocketConsumer):
         thread = await self.get_thread()
         msg = await self.create_message(thread, self.user, text)
 
-        # відправляємо повідомлення в сам чат
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -83,8 +80,6 @@ class ThreadConsumer(AsyncWebsocketConsumer):
             "type": "popup",
             **event
         }))
-
-    # ===================== DB =====================
 
     @database_sync_to_async
     def get_thread(self):

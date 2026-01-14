@@ -89,5 +89,4 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     slug_url_kwarg = 'uuid'
 
     def get_queryset(self):
-        # Це гарантує, що видалити може ТІЛЬКИ автор
         return Post.objects.filter(author=self.request.user)

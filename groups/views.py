@@ -75,8 +75,6 @@ def search_mutual_followers(request):
     data = [{"id": f.following.id, "username": f.following.username} for f in mutual_followers]
     return JsonResponse(data, safe=False)
 
-
-
 @login_required
 def update_group(request, uuid):
     group = get_object_or_404(Group, uuid=uuid)

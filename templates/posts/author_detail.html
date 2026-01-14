@@ -33,7 +33,6 @@
 
     <div class="container" style="padding-top: 140px;">
         
-        {# --- КАРТКА ПРОФІЛЮ --- #}
         <div class="author-card large-card">
             <div class="author-header">
                 {% if author.profile.avatar %}
@@ -64,14 +63,10 @@
                         </div>
                     </div>
 
-                    {# 🔥 УНІВЕРСАЛЬНІ КНОПКИ #}
                     <div class="author-buttons">
                         {% if request.user == author %}
-                            {# Якщо це МІЙ профіль #}
                             <a href="{% url 'auth_system:my-profile-edit' %}" class="btn-small">Edit Profile</a>
-                            {# Кнопка Settings або щось ще, якщо треба #}
                         {% elif request.user.is_authenticated %}
-                            {# Якщо це ЧУЖИЙ профіль #}
                             {% if is_following %}
                                 <a href="{% url 'auth_system:unfollow' author.uuid %}" class="btn-small">Unfollow</a>
                                 <a href="{% url 'messages:start-thread' author.uuid %}" class="btn-small">Message</a>
@@ -94,8 +89,7 @@
                 <span>Joined: {{ author.date_joined|date:"d.m.Y" }}</span>
             </div>
         </div>
-        
-        {# --- ЗАГОЛОВОК ПОСТІВ --- #}
+
         <div class="posts-header">
             <h3>
                 {% if request.user == author %}
@@ -107,7 +101,6 @@
             <a href="{% url 'post:home' %}" class="back-link">← Back to Feed</a>
         </div>
 
-        {# --- СПИСОК ПОСТІВ --- #}
         <ul class="posts-list">
             {% for post in page_obj %}
             <li class="post-card" onclick="window.location.href='{% url 'post:post-detail' post.uuid %}'" style="cursor: pointer;">
@@ -177,7 +170,6 @@
     </div>
 
 <style>
-/* ... Всі твої стилі залишаються без змін ... */
 .container { max-width: 900px; margin: 0 auto; padding: 0 15px; }
 .author-card.large-card { background-color: #fff; border-radius: 20px; padding: 30px 36px; margin-bottom: 40px; box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
 .author-header { display: flex; align-items: center; margin-bottom: 20px; position: relative; }

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        {{ user_profile.username }} - {% if type == "followers" %}Фоловери{% else %}Підписки{% endif %}
+        {{ user_profile.username }} - {% if type == "followers" %}Followers{% else %}Following{% endif %}
     </title>
     <link rel="stylesheet" href="{% static 'blog/styles.css' %}">
     
@@ -64,8 +64,6 @@
             margin: 0;
         }
 
-        /* 🔥 СКИДАННЯ СТИЛІВ ДЛЯ ОБГОРТКИ (LI) */
-        /* Це прибере ефект "подвійної картки" */
         .results-list li {
             background: transparent !important;
             box-shadow: none !important;
@@ -74,7 +72,6 @@
             margin-bottom: 15px;
         }
 
-        /* Картка користувача (Внутрішня, "менша") */
         .user-card {
             display: flex;
             align-items: center;
@@ -139,7 +136,7 @@
             color: #999;
             margin-top: 50px;
             font-size: 16px;
-            background: transparent !important; /* На всяк випадок */
+            background: transparent !important;
             box-shadow: none !important;
         }
 
@@ -177,9 +174,9 @@
         <a href="{% url 'auth_system:profile' user_profile.uuid %}" class="back-link">← Назад</a>
         <h2>
             {% if type == "followers" %}
-                Фоловери
+                Followers
             {% else %}
-                Підписки
+                Following
             {% endif %}
         </h2>
         <div class="header-spacer"></div>
@@ -221,9 +218,9 @@
         {% empty %}
             <li class="empty-state">
                 {% if type == "followers" %}
-                    Ще немає фоловерів.
+                    No followers.
                 {% else %}
-                    Ще немає підписок.
+                    No subscriptions.
                 {% endif %}
             </li>
         {% endfor %}
@@ -232,13 +229,13 @@
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="pagination">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}">← Попередня</a>
+            <a href="?page={{ page_obj.previous_page_number }}">← Previous</a>
         {% endif %}
 
-        <span class="current">Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">Наступна →</a>
+            <a href="?page={{ page_obj.next_page_number }}">Next →</a>
         {% endif %}
     </div>
     {% endif %}
